@@ -79,13 +79,29 @@
 
 
 
-<meta property="og:type" content="website">
+<meta name="description" content="《Contrastive Learning with Hard Negative Samples》阅读笔记1 动机和思路对比学习在无监督表征学习领域的潜力无需多言，已经有非常多的例子证明其效果，目前比较多的针对对比学习的改进包括损失函数、抽样策略、数据增强方法等多方面，但是针对负对的研究相对而言更少一些，一般在构造正负对时，大部分模型都简单的把单张图像及其增强副本作为正对，其余样本均视为负对。这一">
+<meta property="og:type" content="article">
 <meta property="og:title" content="Hexo">
-<meta property="og:url" content="http://example.com/index.html">
+<meta property="og:url" content="http://example.com/2020/12/26/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/index.html">
 <meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="《Contrastive Learning with Hard Negative Samples》阅读笔记1 动机和思路对比学习在无监督表征学习领域的潜力无需多言，已经有非常多的例子证明其效果，目前比较多的针对对比学习的改进包括损失函数、抽样策略、数据增强方法等多方面，但是针对负对的研究相对而言更少一些，一般在构造正负对时，大部分模型都简单的把单张图像及其增强副本作为正对，其余样本均视为负对。这一">
 <meta property="og:locale" content="en_US">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.1-1608981534224.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.2-1608982447207.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.3-1608982496092.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.4-1608982538530.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.5-1608983198336.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.6-1608983226868.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.7-1608983580203.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.8-1608983656405.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.9-1608984262715.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.10-1608984310866.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.11-1608984359417.jpg">
+<meta property="article:published_time" content="2020-12-26T07:30:33.319Z">
+<meta property="article:modified_time" content="2021-01-18T08:09:15.186Z">
 <meta property="article:author" content="John Doe">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.1-1608981534224.jpg">
 
 
 
@@ -115,13 +131,13 @@
 
 
 
-  <link rel="canonical" href="http://example.com/"/>
+  <link rel="canonical" href="http://example.com/2020/12/26/《Contrastive Learning with Hard Negative Samples》阅读笔记/"/>
 
 
 
 
 
-  <title>Hexo</title>
+  <title> | Hexo</title>
   
 
 
@@ -140,8 +156,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -214,256 +229,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/18/test-my-site/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/18/test-my-site/" itemprop="url">test_my_site</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-18T12:48:20+08:00">
-                2021-01-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/18/hello-world/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="Hexo">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2021/01/18/hello-world/" itemprop="url">Hello World</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">Posted on</span>
-              
-              <time title="Post created" itemprop="dateCreated datePublished" datetime="2021-01-18T12:45:32+08:00">
-                2021-01-18
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>Welcome to <a target="_blank" rel="noopener" href="https://hexo.io/">Hexo</a>! This is your very first post. Check <a target="_blank" rel="noopener" href="https://hexo.io/docs/">documentation</a> for more info. If you get any problems when using Hexo, you can find the answer in <a target="_blank" rel="noopener" href="https://hexo.io/docs/troubleshooting.html">troubleshooting</a> or you can ask me on <a target="_blank" rel="noopener" href="https://github.com/hexojs/hexo/issues">GitHub</a>.</p>
-<h2 id="Quick-Start"><a href="#Quick-Start" class="headerlink" title="Quick Start"></a>Quick Start</h2><h3 id="Create-a-new-post"><a href="#Create-a-new-post" class="headerlink" title="Create a new post"></a>Create a new post</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo new <span class="string">&quot;My New Post&quot;</span></span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/writing.html">Writing</a></p>
-<h3 id="Run-server"><a href="#Run-server" class="headerlink" title="Run server"></a>Run server</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo server</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/server.html">Server</a></p>
-<h3 id="Generate-static-files"><a href="#Generate-static-files" class="headerlink" title="Generate static files"></a>Generate static files</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo generate</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/generating.html">Generating</a></p>
-<h3 id="Deploy-to-remote-sites"><a href="#Deploy-to-remote-sites" class="headerlink" title="Deploy to remote sites"></a>Deploy to remote sites</h3><figure class="highlight bash"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">$ hexo deploy</span><br></pre></td></tr></table></figure>
-<p>More info: <a target="_blank" rel="noopener" href="https://hexo.io/docs/one-command-deployment.html">Deployment</a></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
 
   
 
@@ -493,9 +261,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/26/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" itemprop="url">Untitled</a></h1>
+          <h1 class="post-title" itemprop="name headline"></h1>
         
 
         <div class="post-meta">
@@ -545,9 +311,7 @@
       
 
       
-        
-          
-            <h1 id="《Contrastive-Learning-with-Hard-Negative-Samples》阅读笔记"><a href="#《Contrastive-Learning-with-Hard-Negative-Samples》阅读笔记" class="headerlink" title="《Contrastive Learning with Hard Negative Samples》阅读笔记"></a>《Contrastive Learning with Hard Negative Samples》阅读笔记</h1><h2 id="1-动机和思路"><a href="#1-动机和思路" class="headerlink" title="1 动机和思路"></a>1 动机和思路</h2><p>对比学习在无监督表征学习领域的潜力无需多言，已经有非常多的例子证明其效果，目前比较多的针对对比学习的改进包括损失函数、抽样策略、数据增强方法等多方面，但是针对负对的研究相对而言更少一些，一般在构造正负对时，大部分模型都简单的把单张图像及其增强副本作为正对，其余样本均视为负对。这一策略可能会导致的问题是模型把相距很远的样本分得很开，而距离较近的负样本对之间可能比较难被区分。</p>
+        <h1 id="《Contrastive-Learning-with-Hard-Negative-Samples》阅读笔记"><a href="#《Contrastive-Learning-with-Hard-Negative-Samples》阅读笔记" class="headerlink" title="《Contrastive Learning with Hard Negative Samples》阅读笔记"></a>《Contrastive Learning with Hard Negative Samples》阅读笔记</h1><h2 id="1-动机和思路"><a href="#1-动机和思路" class="headerlink" title="1 动机和思路"></a>1 动机和思路</h2><p>对比学习在无监督表征学习领域的潜力无需多言，已经有非常多的例子证明其效果，目前比较多的针对对比学习的改进包括损失函数、抽样策略、数据增强方法等多方面，但是针对负对的研究相对而言更少一些，一般在构造正负对时，大部分模型都简单的把单张图像及其增强副本作为正对，其余样本均视为负对。这一策略可能会导致的问题是模型把相距很远的样本分得很开，而距离较近的负样本对之间可能比较难被区分。</p>
 <p>基于此，本文构造了一个难负对的思想，主要目的在于，把离样本点距离很近但是又确实不属于同一类的样本作为负样本，加大了负样本的难度，从而使得类与类之间分的更开，来提升对比学习模型的表现。</p>
 <h2 id="2-方法"><a href="#2-方法" class="headerlink" title="2 方法"></a>2 方法</h2><h3 id="2-1-难负样本选取原则"><a href="#2-1-难负样本选取原则" class="headerlink" title="2.1 难负样本选取原则"></a>2.1 难负样本选取原则</h3><p>好的难负样本有两点原则：1）与原始样本的标签不同；2）与原始样本尽量相似。</p>
 <p>这一点就与之前的对比学习有比较明显的差异了，因为对比学习一般来说并不使用监督信息，因此除了锚点之外的其他样本，不管标签如何，都被认为是负对，所以问题的一个关键在于“<strong>用无监督的方法筛出不属于同一个标签的样本</strong>”。不仅如此，这里还有一个冲突的地方，既要与锚点尽可能相似，又得不属于同一类，这对于一个无监督模型来说是有难度的，因此本文在实际实现过程中进行了一个权衡，<strong>假如对样本的难度要求不是那么高的时候，就只满足原则1，而忽略原则2</strong>。同时，这种方法应该尽量<strong>不增加额外的训练成本</strong>。</p>
@@ -581,8 +345,6 @@
 <p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.11-1608984359417.jpg"></p>
 <p>可以发现，在β设置得较大的时候，模型的质量甚至会下降。</p>
 
-          
-        
       
     </div>
     
@@ -599,12 +361,28 @@
       
 
       
+      
+      
 
       
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/18/hello-world/" rel="prev" title="Hello World">
+                Hello World <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
 
       
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -614,10 +392,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -625,6 +404,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -645,8 +428,17 @@
       
 
       
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
 
-      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
+      <section class="site-overview-wrap sidebar-panel">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -688,6 +480,22 @@
         </div>
       </section>
 
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E3%80%8AContrastive-Learning-with-Hard-Negative-Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0"><span class="nav-number">1.</span> <span class="nav-text">《Contrastive Learning with Hard Negative Samples》阅读笔记</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E5%8A%A8%E6%9C%BA%E5%92%8C%E6%80%9D%E8%B7%AF"><span class="nav-number">1.1.</span> <span class="nav-text">1 动机和思路</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">2 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E9%9A%BE%E8%B4%9F%E6%A0%B7%E6%9C%AC%E9%80%89%E5%8F%96%E5%8E%9F%E5%88%99"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 难负样本选取原则</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%85%B7%E4%BD%93%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 具体方法</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.3.</span> <span class="nav-text">3 实验</span></a></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
       
 
       
@@ -828,6 +636,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 
