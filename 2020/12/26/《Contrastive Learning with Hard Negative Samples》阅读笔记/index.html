@@ -320,33 +320,33 @@
 <h2 id="2-方法"><a href="#2-方法" class="headerlink" title="2 方法"></a>2 方法</h2><h3 id="2-1-难负样本选取原则"><a href="#2-1-难负样本选取原则" class="headerlink" title="2.1 难负样本选取原则"></a>2.1 难负样本选取原则</h3><p>好的难负样本有两点原则：1）与原始样本的标签不同；2）与原始样本尽量相似。</p>
 <p>这一点就与之前的对比学习有比较明显的差异了，因为对比学习一般来说并不使用监督信息，因此除了锚点之外的其他样本，不管标签如何，都被认为是负对，所以问题的一个关键在于“<strong>用无监督的方法筛出不属于同一个标签的样本</strong>”。不仅如此，这里还有一个冲突的地方，既要与锚点尽可能相似，又得不属于同一类，这对于一个无监督模型来说是有难度的，因此本文在实际实现过程中进行了一个权衡，<strong>假如对样本的难度要求不是那么高的时候，就只满足原则1，而忽略原则2</strong>。同时，这种方法应该尽量<strong>不增加额外的训练成本</strong>。</p>
 <h3 id="2-2-具体方法"><a href="#2-2-具体方法" class="headerlink" title="2.2 具体方法"></a>2.2 具体方法</h3><p>本文的重点在于如何进行难负样本采样，首先作者给出难负样本的采样分布函数：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.1-1608981534224.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.1-1608981534224.jpg" alt=""></p>
 <p>即难负样本分布以与正类类别不同为条件的概率分布，$q_β(x^-)$是正负样本点积乘以系数$β$之后的指数项再乘以单纯的负样本采样分布，$β$控制采样的难易程度，值越大，代表样本越难。点积越大，$q_β(x^-)$就越大，表示这个样本更容易被采样，结合原则2，即尽量采样困难负样本。</p>
 <p>但是这里没有解决原则1的问题，对于无监督方法，我们仍然不知道该怎么确定采样到的负样本与锚点的标签是不是一致的，这里作者用PU-learning的思想，把负样本分布$q_β(x^-)$拆成来自同标签分布$q_β^+(x^-)$与来自不同标签分布$q_β^-(x^-)$的两个部分：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.2-1608982447207.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.2-1608982447207.jpg" alt=""></p>
 <p>这里对于来自$q_β^+(x^-)$的样本同样施以原则2，即为：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.3-1608982496092.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.3-1608982496092.jpg" alt=""></p>
 <p>所以满足原则1和原则2的难负样本分布就可以写为：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.4-1608982538530.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.4-1608982538530.jpg" alt=""></p>
 <p>上式的第一项就是常规的负样本分布，第二项作者提到可以使用语义保留转换去估计这一分布，传统无监督对比学习做的就是这件事儿。</p>
 <p>所以原始对比损失：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.5-1608983198336.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.5-1608983198336.jpg" alt=""></p>
 <p>就可以改写为只使用难负样本的情况：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.6-1608983226868.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.6-1608983226868.jpg" alt=""></p>
 <p>分母第二项大括号里头的第一项就是之前的总负样本，第二项就是和锚点相似度很高的来自同一类的负样本。所以只需要求出分母中的两个均值，这个损失就算是给出来了。</p>
 <p>计算这两项均值的方法，作者用的是蒙特卡洛重要性采样：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.7-1608983580203.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.7-1608983580203.jpg" alt=""></p>
 <p>式子右边分母的$Z_β$和$Z_β^+$是两个配分函数，可以用均值近似:</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.8-1608983656405.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.8-1608983656405.jpg" alt=""></p>
 <p>作者提出，在pytorch框架下，这个操作只需要额外两行代码九就能搞定，不需要做另外的操作。</p>
 <h2 id="3-实验"><a href="#3-实验" class="headerlink" title="3 实验"></a>3 实验</h2><p>作者以SimCLR为Baseline在几个数据集上进行了实验，给出了对应的实验效果：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.9-1608984262715.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.9-1608984262715.jpg" alt=""></p>
 <p>发现使用这种难负样本机制有所改善。</p>
 <p>第二点是作者把训练好的，模型用到下游分类任务中，给出分类精度：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.10-1608984310866.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.10-1608984310866.jpg" alt=""></p>
 <p>在部分数据集上比baseline有所提升。</p>
 <p>但是这个β值并不是越大越好的，过大可能也存在问题：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.11-1608984359417.jpg"></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.11-1608984359417.jpg" alt=""></p>
 <p>可以发现，在β设置得较大的时候，模型的质量甚至会下降。</p>
 
       
