@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="SimCLR：用于视觉表征的对比学习框架 1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大； 本文定义了一个对比损失和表征之间的可学习非线性转换，大幅提高了表征的质量； 具有对比交叉熵损失(contrastive cross entropy loss)的表征学习得益于归一化嵌入和适当地调整温度参数；">
+<meta property="og:type" content="article">
+<meta property="og:title" content="缓缓行舟">
+<meta property="og:url" content="http://example.com/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/index.html">
+<meta property="og:site_name" content="缓缓行舟">
+<meta property="og:description" content="SimCLR：用于视觉表征的对比学习框架 1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大； 本文定义了一个对比损失和表征之间的可学习非线性转换，大幅提高了表征的质量； 具有对比交叉熵损失(contrastive cross entropy loss)的表征学习得益于归一化嵌入和适当地调整温度参数；">
+<meta property="og:locale">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/1.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/2.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/4.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/6.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/7.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/8.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/9.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/10.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/11.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/12.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/13.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/14.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/15.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/16.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/17.png">
+<meta property="article:published_time" content="2020-09-14T05:27:16.771Z">
+<meta property="article:modified_time" content="2021-01-19T08:49:24.124Z">
+<meta property="article:author" content="微澜">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2020/09/14/SimCLR：用于视觉表征的对比学习框架/"/>
+
+
+
+
+
+  <title> | 缓缓行舟</title>
+  
+
+
+
+
+
+
+
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">缓缓行舟</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">给行船途中的所感所获一个容身之处</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline"></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-14T13:27:16+08:00">
+                2020-09-14
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="SimCLR：用于视觉表征的对比学习框架"><a href="#SimCLR：用于视觉表征的对比学习框架" class="headerlink" title="SimCLR：用于视觉表征的对比学习框架"></a>SimCLR：用于视觉表征的对比学习框架</h1><p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif" style="zoom:67%;" /></p>
+<h2 id="1-概况"><a href="#1-概况" class="headerlink" title="1 概况"></a>1 概况</h2><p><strong>核心观点：</strong></p>
+<ol>
+<li>数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大；</li>
+<li>本文定义了一个对比损失和表征之间的可学习非线性转换，大幅提高了表征的质量；</li>
+<li>具有对比交叉熵损失(contrastive cross entropy loss)的表征学习得益于归一化嵌入和适当地调整温度参数；</li>
+<li>与监督学习相比，对比学习可以通过更多的训练和更大的Batch Size 获得更好的表现，更深更宽的网络对对比学习表现的提升也有益。</li>
+</ol>
+<p><strong>框架效果：</strong></p>
+<ol>
+<li><p>在对Image Net 进行分类实验时，在top-1精度上取得了76.5%的结果，获比之前最先进的无监督或半监督提升7%，与有监督的Res-Net-50性能相媲美；</p>
+</li>
+<li><p>对Image Net 1%的Label 进行微调时，SimCLR 实现了85.8%的top-5精度，相对性能提升10%,超越了100× fewer label的AlexNet；</p>
+</li>
+<li><p>在其他自然图像分类数据集上进行微调时，SimCLR 在12个数据集中的10个数据集上的表现相当于或优于强监督的Baseline。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/1.png" alt="ImageNet Top-1精度表现" style="zoom: 67%;" /></p>
+</li>
+</ol>
+<h2 id="2-方法"><a href="#2-方法" class="headerlink" title="2 方法"></a>2 方法</h2><h3 id="2-1-对比学习框架"><a href="#2-1-对比学习框架" class="headerlink" title="2.1 对比学习框架"></a>2.1 对比学习框架</h3><p>SimCLR 通过潜在空间上的对比损失，最大化相同数据示例的不同增强视图之间的协议进行表征学习，主要由四个主要组件组成：</p>
+<ol>
+<li><p><strong>随机数据增强模块</strong></p>
+<p>将任意给定的数据示例随即转换为同一示例的两个相关视图，用$\widetilde{x}_i$和$\widetilde{x}_j$表示，将其视为一个正对。本文使用了三种方法进行数据增强：<strong>随即裁剪和调整（如随机翻转）</strong>（裁剪后调整图像尺寸为原图大小），<strong>随机色彩失真</strong>和<strong>随机高斯模糊</strong>，作者认为随即裁剪和色彩失真的结合是使网络具有良好性能的关键。</p>
+</li>
+<li><p><strong>神经网络基编码器(base encoder)</strong></p>
+<p>基编码器定义为$f(·)$，其作用在于从增强后的数据集中提取表征向量。作者认为SimCLR可以在无任何约束的情况下选择各种网络架构的基编码器，论文中选择的是常见的ResNet。因此，对于数据$\widetilde{x}_i$，有：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{h}_i=f(\widetilde{x}_i)=ResNet(\widetilde{x}_i)</script><p>其中，$\boldsymbol{h}_i\in\R^d$，为经过平均池化层之后的输出。</p>
+</li>
+<li><p><strong>小型神经网络投影头(projection head)</strong></p>
+<p>投影头$g(·)$的作用是将编码后的表征$h_i$映射到应用对比损失的潜在空间中，本文使用的是一个两层MLP，具体计算方法如下：</p>
+<script type="math/tex; mode=display">
+z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函数，用$z_i$比$\boldsymbol{h}_i$更好构造对比损失。</p>
+</li>
+<li><p><strong>对比损失函数</strong></p>
+<p>在对比任务中，倘若给定一个包含正对$\widetilde{x}_i$和$\widetilde{x}_j$的数据集$\left\{\widetilde{x}_k\right\}$，重构损失的作用是从$\left\{\widetilde{x}_k\right\}_{k{\neq}i}$中找出给定$\widetilde{x}_i$对应的正对$\widetilde{x}_j$。</p>
+</li>
+</ol>
+<p>因此，整个SimCLR的结构如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/2.png" alt="SimCLR对比学习框架结构图" style="zoom:67%;" /></p>
+<ol>
+<li><p><strong>样本构造：</strong></p>
+<p>对于预测任务，随机采样一小批($N$个))数据样本，之后采用数据增强方法，将每一个样本进行扩充，一共得到$2N$个数据点，即$N$个正对。在本文中，不直接构造负对，而是对于给定的正对$\left\{\widetilde{x}_i, \widetilde{x}_j\right\}$，将除该样本对以外的其他$2(N-1)$个样本示例都视为负样本。</p>
+</li>
+<li><p><strong>损失函数构造：</strong></p>
+<p>本文的对比损失函数基于$l_2$正则化，是从其他论文中参考得到的，称我为NT-Xent(标准化温度尺度的交叉熵损失)。该loss首先定义了一个sim函数表示正则化：$\rm{sim}(\boldsymbol{u},\boldsymbol{v})={\boldsymbol{u}^\mathsf{T}}\boldsymbol{v}/|\boldsymbol{u}||\boldsymbol{v}|$，正对$\left\{\widetilde{x}_i, \widetilde{x}_j\right\}$之间的损失函数即为：</p>
+<script type="math/tex; mode=display">
+\ell_{i,j}=-\log\frac{\exp(\rm{sim}(\it{z_i},z_j\rm)/\tau)}{\sum_{k=1}^{2N}{\mathbb{l}_{[k{\neq}i] }\exp(\rm{sim}(\it{z_i},z_j\rm)/\tau)} }</script><p>上式中，$\mathbb{l}_{[k{\neq}i]}$是一个指示函数，当且仅当$k=i$时取0，否则为1。$\tau$是进行优化的温度参数，后续实验显示为0.1时效果最好。</p>
+</li>
+<li><p><strong>算法概述</strong></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.png" alt="SimCLR框架算法" style="zoom:80%;" /></p>
+<p>根据算法可以发现，在构造数据时，对$\widetilde{x}_i$与$\widetilde{x}_j$分别采用一种增强方法，并且分别计算了一个正对中每个数据点对另一种增强方法所有数据的余弦相似性。</p>
+</li>
+</ol>
+<h3 id="2-2-大Batch-Size训练方法"><a href="#2-2-大Batch-Size训练方法" class="headerlink" title="2.2 大Batch Size训练方法"></a>2.2 大Batch Size训练方法</h3><p>作者提到，为了保持框架的简单化，在模型训练时不采用记忆库训练模型，而是采用大Batch Size的形式，将Batch Size从256扩大为<strong>8192</strong>，在进行数据增强之后，一个正对将有$（8192-1）×2=16382$个负示例。为了克服大Batch Size使用SGD/Momentum进行优化时可能导致的训练不稳定问题，论文对每个Batch Size都采用了<strong>LARS</strong>优化器。</p>
+<p>此外，由于标准ResNet架构采用Batch Normlization(BN)进行规范化，作者指出，在具有数据并行性的分布式训练中，BN的均值和方差通常在每张卡上进行局部的聚合。而论文提出的对比学习中，正对在同一张卡中计算，模型可以利用局部信息泄漏提高预测精度，而不需要改善表征，他们在训练过程中使用了一种<strong>Global BN</strong>的方法，取所有卡上BN的均值和方差作为表示。</p>
+<h3 id="2-3-评价方案"><a href="#2-3-评价方案" class="headerlink" title="2.3 评价方案"></a>2.3 评价方案</h3><ol>
+<li><p><strong>数据集选择</strong></p>
+<p>大部分实验都在<strong>ImageNet ILSVRC-2012</strong> 数据集上进行；少部分实验在<strong>CIFAR-10</strong>上进行；还使用了一些广泛用于<strong>迁移学习</strong>的数据。</p>
+<p>使用线性评估协议进行评估，在一个冻结基网络的顶层训练一个线性分类器，测试分类精度，也比较了一些迁移学习和半监督方法。</p>
+</li>
+<li><p><strong>默认设置</strong></p>
+<p>除非另有规定：</p>
+<p>在数据增强时使用<strong>随机裁剪和调整(随机翻转)</strong>，<strong>颜色失真</strong>，和<strong>高斯模糊</strong>三种方法。</p>
+<p>使用<strong>ResNet-50</strong>作为基础网络编码器,并使用两层MLP将编码后的表征投影到一个128维的潜在空间之中。</p>
+<p>训练时，使用<strong>NT-Xent</strong> loss，使用<strong>LARS</strong>进行优化，设置学习率为$4.8 (= 0.3×Batch Size/256)$，权值衰减率为$10^{-6}$。Batch Size大小为4096，共训练100个epoch。此外，在前10个epoch使用线性预热，并在不重新启动的情况下使用余弦衰减计划衰减学习速率。</p>
+</li>
+</ol>
+<h2 id="3-数据增强"><a href="#3-数据增强" class="headerlink" title="3 数据增强"></a>3 数据增强</h2><h3 id="3-1-数据增强涵盖了对比预测任务的两种情况"><a href="#3-1-数据增强涵盖了对比预测任务的两种情况" class="headerlink" title="3.1 数据增强涵盖了对比预测任务的两种情况"></a>3.1 数据增强涵盖了对比预测任务的两种情况</h3><p>作者指出，目前数据增强方法尚未被视为对比预测任务的标准手段之一，目前流行的手段都是通过改变网络架构实现对比预测，作者认为他们的数据增强方法可以在数据层面即涵盖两种典型的对比预测任务，分别是<strong>整体——局部预测</strong>和<strong>邻近预测</strong>。</p>
+<p>具体来说，如下图所示，在对图像应用随机裁剪时，将会出现如下图左右两张图的正对样本，这些样本包含了上述的两种对比预测任务情形（A, B: 整体——局部；C, D: 临近）。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/4.png" alt="图像增强在对比预测上的应用" style="zoom:67%;" /></p>
+<h3 id="3-2-不同数据增强方式的组合对表征学习效果至关重要"><a href="#3-2-不同数据增强方式的组合对表征学习效果至关重要" class="headerlink" title="3.2 不同数据增强方式的组合对表征学习效果至关重要"></a>3.2 不同数据增强方式的组合对表征学习效果至关重要</h3><p>作者通过下图展示了多种数据增强的方法，需要注意的是，在实验中，其只使用了随即裁剪（包括裁剪、大小调整和翻转）、颜色失真和高斯模糊三种手段。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.png" alt="数据增强手段举例"></p>
+<p>在实验过程中，作者通过研究单独和成对数据增强方法对SimCLR框架性能的影响。由于ImageNet数据库中的图像大小并不一致，在使用数据时通常已经进行了图像裁剪和调整操作，由于很难剔除随机裁剪的影响，因此作者通过不对称转换改善这一情况。</p>
+<p>具体来说，首先对数据样本次啊用随机裁剪，并将其调整到相同的分辨率大小，之后对一个框架的两个分支中的一个应用目标转换$t(·)$，而另一个分支作为标志，即令：$t(x_i)=x_i$。</p>
+<p>作者认为这种非对称数据的增加会对框架性能产生影响，但不应该在实质上改变单个数据增强或组合数据增强方法的影响。</p>
+<p>作者测评了不同方法和组合方法的top-1识别结果，如下图所示。可以发现，单一数据增强方法都不足以学到良好的表征，即使模型可以识别出任务中的正对，组合增强方法会增大预测难度，但是能够显著提升表征质量，最后作者发现，随机裁剪和颜色失真的组合最有利于学习表征。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/6.png" alt="数据增强方法对表征学习的影响"></p>
+<h3 id="3-3-对比学习比监督学习更需要数据增强"><a href="#3-3-对比学习比监督学习更需要数据增强" class="headerlink" title="3.3 对比学习比监督学习更需要数据增强"></a>3.3 对比学习比监督学习更需要数据增强</h3><p>作者调整了颜色增强的强度，发现颜色增强大大提升了SimCLR的线性评估结果。而监督学习使用更加复杂的自动增强方法时，表征学习的表现也没有比简单的裁剪+颜色失真效果好，不同的颜色增强强度也没有提升或削弱监督学习的表现。因此作者认为对比学习比监督学习可以从颜色增强中获得更大收益。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/7.png" alt="颜色增强对不同监督模型的增益" style="zoom:67%;" /></p>
+<h2 id="4-Encoder-和Head-的架构"><a href="#4-Encoder-和Head-的架构" class="headerlink" title="4 Encoder 和Head 的架构"></a>4 Encoder 和Head 的架构</h2><h3 id="4-1-更大的模型使无监督对比模型表现更好"><a href="#4-1-更大的模型使无监督对比模型表现更好" class="headerlink" title="4.1 更大的模型使无监督对比模型表现更好"></a>4.1 更大的模型使无监督对比模型表现更好</h3><p>下图中绿色“×”是有监督ResNet 训练90个epoch的结果，红色“★”是本文模型训练100个epoch的及如果，蓝色“·”是本文模型训练100个epoch的结果，可以发现，随着网络参数的增加，有监督和无监督模型的表现都有所提升，但无监督模型的提升更大。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/8.png" alt="网络参数数量对表征识别的影响" style="zoom:67%;" /></p>
+<h3 id="4-2-非线性投影head有助于提升其之前网络层的表征质量"><a href="#4-2-非线性投影head有助于提升其之前网络层的表征质量" class="headerlink" title="4.2 非线性投影head有助于提升其之前网络层的表征质量"></a>4.2 非线性投影head有助于提升其之前网络层的表征质量</h3><p>非线性投影head，即前文提到的$g(\boldsymbol{h})$，本文对比了包括非线性投影、线性投影以及无投影在内的三种映射方式对表征质量的影响，如下图所示。最终发现非线性投影的Top-1精度比无映射提升10%以上，比线性投影提升3%，并且这一结果在只使用一个head时不受输出维度的影响。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/9.png" alt="不同映射方式对表征质量的影响" style="zoom: 80%;" /></p>
+<p>此外，作者提到使用非线性投影时，head前面的隐藏层也可以学到更好的表征。</p>
+<p>同时，作者通过对使用非线性投影后的映射$z$ 以及非线性投影之前的映射$\boldsymbol{h}$对不同表征的预测表现进行对比，发现$z$ 比$\boldsymbol{h}$保留了更少的信息，具体如下表所示。作者认为是因为$z$删除了一些颜色之类的信息，使得在训练过程中这些信息更多在$\boldsymbol{h}$阶段形成。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/10.png" alt="不同方法保留信息的大小" style="zoom:67%;" /></p>
+<h2 id="5-损失函数和Batch-Size"><a href="#5-损失函数和Batch-Size" class="headerlink" title="5 损失函数和Batch Size"></a>5 损失函数和Batch Size</h2><h3 id="5-1-带有可调温度参数的归一化交叉熵损失是更优选择"><a href="#5-1-带有可调温度参数的归一化交叉熵损失是更优选择" class="headerlink" title="5.1 带有可调温度参数的归一化交叉熵损失是更优选择"></a>5.1 带有可调温度参数的归一化交叉熵损失是更优选择</h3><p>作者对比了本文使用的NT-Xent损失和下表中另外两种对比损失应用于此框架的表现。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/11.png" alt="不同loss表达式" style="zoom:67%;" /></p>
+<p>作者认为NT-Xent损失中的温度参数可以帮助模型从hard-negative中学习，而其他损失函数没有这个特点，必须引入额外的semi-hard-negative进行挖掘，在均使用l2正则化（余弦相似性）时，发现即使是用了semi-hard-negative的其他loss，表现也不如NT-Xent。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/12.png" alt="不同loss表现对比" style="zoom:67%;" /></p>
+<p>在此基础上，作者又测试了使用l2正则化和只使用点积的情况以及不同温度参数对对比任务精度和通过Top-1预测的表征表现情况，发现不使用l2正则化会提升对比任务精度，但是降低了表征的线性评估结果。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/13.png" alt="l2正则化和温度参数影响探究" style="zoom:67%;" /></p>
+<h3 id="5-2-大Batch-Size和更多训练对对比学习更有益"><a href="#5-2-大Batch-Size和更多训练对对比学习更有益" class="headerlink" title="5.2 大Batch Size和更多训练对对比学习更有益"></a>5.2 大Batch Size和更多训练对对比学习更有益</h3><p>作者通过实验发现，大Batch Size 和大epoch 对框架的表现具有提升，因为增大这两者会提供更多的负例。不过随着epoch的增加，不同Batch Size效果之间的差异在减小。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/14.png" alt="不同epoch与batch size的影响" style="zoom:67%;" /></p>
+<h2 id="6-实验对比"><a href="#6-实验对比" class="headerlink" title="6 实验对比"></a>6 实验对比</h2><h3 id="6-1-线性评估"><a href="#6-1-线性评估" class="headerlink" title="6.1 线性评估"></a>6.1 线性评估</h3><p>这部分实验用预训练好的一些无监督模型训练了一个线性分类器，评估在ImageNet上的效果，可以发现，SimCLR的Top-1和Top-5表现都很优秀，当加深网络时，无监督模型的表现普遍提升（括号中的(4×)的意思是网络宽度是原网络的4倍）。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/15.png" alt="线性评估" style="zoom:80%;" /></p>
+<h3 id="6-2-半监督学习"><a href="#6-2-半监督学习" class="headerlink" title="6.2 半监督学习"></a>6.2 半监督学习</h3><p>对ImageNet采样1%和10%有标签的训练集（分别是12.8张与128张图片一个类）进行微调，比较不同网络的效果。</p>
+<p>微调过程使用名为Nesterov动量优化器进行调整，对于1%标记的数据，对60个epoch进行微调，对于10%标签的数据，对30个epoch进行微调，同时调整图像大小为256×256，之后在中央应用裁剪，裁剪到224×224的大小。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/16.png" alt="半监督学习" style="zoom: 80%;" /></p>
+<h3 id="6-3-迁移学习"><a href="#6-3-迁移学习" class="headerlink" title="6.3 迁移学习"></a>6.3 迁移学习</h3><p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/17.png" alt="迁移学习" style="zoom:67%;" /></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2020/12/22/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/" rel="prev" title="四篇图像解耦工作简要介绍">
+                四篇图像解耦工作简要介绍 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6"><span class="nav-number">1.</span> <span class="nav-text">SimCLR：用于视觉表征的对比学习框架</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A6%82%E5%86%B5"><span class="nav-number">1.1.</span> <span class="nav-text">1 概况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">2 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 对比学习框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%A4%A7Batch-Size%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 大Batch Size训练方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E8%AF%84%E4%BB%B7%E6%96%B9%E6%A1%88"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 评价方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">1.3.</span> <span class="nav-text">3 数据增强</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%B6%B5%E7%9B%96%E4%BA%86%E5%AF%B9%E6%AF%94%E9%A2%84%E6%B5%8B%E4%BB%BB%E5%8A%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%83%85%E5%86%B5"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 数据增强涵盖了对比预测任务的两种情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%96%B9%E5%BC%8F%E7%9A%84%E7%BB%84%E5%90%88%E5%AF%B9%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E6%95%88%E6%9E%9C%E8%87%B3%E5%85%B3%E9%87%8D%E8%A6%81"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 不同数据增强方式的组合对表征学习效果至关重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%AF%94%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E6%9B%B4%E9%9C%80%E8%A6%81%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">1.3.3.</span> <span class="nav-text">3.3 对比学习比监督学习更需要数据增强</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Encoder-%E5%92%8CHead-%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="nav-number">1.4.</span> <span class="nav-text">4 Encoder 和Head 的架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%9B%B4%E5%A4%A7%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BD%BF%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E6%A8%A1%E5%9E%8B%E8%A1%A8%E7%8E%B0%E6%9B%B4%E5%A5%BD"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 更大的模型使无监督对比模型表现更好</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%8A%95%E5%BD%B1head%E6%9C%89%E5%8A%A9%E4%BA%8E%E6%8F%90%E5%8D%87%E5%85%B6%E4%B9%8B%E5%89%8D%E7%BD%91%E7%BB%9C%E5%B1%82%E7%9A%84%E8%A1%A8%E5%BE%81%E8%B4%A8%E9%87%8F"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 非线性投影head有助于提升其之前网络层的表征质量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E5%92%8CBatch-Size"><span class="nav-number">1.5.</span> <span class="nav-text">5 损失函数和Batch Size</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%B8%A6%E6%9C%89%E5%8F%AF%E8%B0%83%E6%B8%A9%E5%BA%A6%E5%8F%82%E6%95%B0%E7%9A%84%E5%BD%92%E4%B8%80%E5%8C%96%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1%E6%98%AF%E6%9B%B4%E4%BC%98%E9%80%89%E6%8B%A9"><span class="nav-number">1.5.1.</span> <span class="nav-text">5.1 带有可调温度参数的归一化交叉熵损失是更优选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%A4%A7Batch-Size%E5%92%8C%E6%9B%B4%E5%A4%9A%E8%AE%AD%E7%BB%83%E5%AF%B9%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%9B%B4%E6%9C%89%E7%9B%8A"><span class="nav-number">1.5.2.</span> <span class="nav-text">5.2 大Batch Size和更多训练对对比学习更有益</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%AE%9E%E9%AA%8C%E5%AF%B9%E6%AF%94"><span class="nav-number">1.6.</span> <span class="nav-text">6 实验对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E7%BA%BF%E6%80%A7%E8%AF%84%E4%BC%B0"><span class="nav-number">1.6.1.</span> <span class="nav-text">6.1 线性评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E5%8D%8A%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.6.2.</span> <span class="nav-text">6.2 半监督学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.6.3.</span> <span class="nav-text">6.3 迁移学习</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">微澜</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+
+
+  
+
+  
+
+</body>
+</html>
