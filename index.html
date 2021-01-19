@@ -235,6 +235,194 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Moco/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/19/Moco/" itemprop="url">Moco：无监督视觉表征学习的动量对比</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T16:08:44+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a>1 概述</h2><p>在NLP领域，无监督表征学习有GPT、BERT等效果非常好的模型，但是CV领域还是有监督模型作为主流。作者认为主要是因为CV和NLP领域处理的数据对应的信号空间不同：语言任务有离散的信号空间，词语词之间可以视为是独立的词组，能够很方便地构成字典（Dictionary），这种词典是无监督学习便于学习依赖的特征；而视觉领域的原始信号是在一个连续且高维空间中，无法成为结构化的信号，使得无监督学习难以展现在NLP领域发挥出的效果。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.1.png" alt="moco原理" style="zoom:80%;" /></p>
+<p>作者提出了一种动态字典，即MOCO，新的minibatch对应的字典在进入队列时，将会替换最早进入的字典，使得字典始终是所有数据的子集，又始终代表最新的表征，经过试验发现，Moco的表现非常之好。</p>
+<h2 id="2-思想"><a href="#2-思想" class="headerlink" title="2 思想"></a>2 思想</h2><p>对比学习的思想在于，通过一些已编码的query（q），使其与其对应的key（k）相对应，k是被编码的样本的在字典中的key$\lbrace k_0,k_1,k_2…\rbrace$，假设$q$与$k_+$相匹配，对比损失的目的是尽量拉近$q$与$k_+$之间的距离而增大$q$与其他$k_i$之间的距离（拉近正对，缩小负对，其他的$k_i$都是负对），Moco用的是点积的方法衡量相似度，称为InfoNCE loss：</p>
+<script type="math/tex; mode=display">
+\ell_{i,j}=-\log\frac{\exp(q·k_+/\tau)} {\sum_{i=0}^{K} {\exp(q·k_i/\tau) } }</script><p>其中，$\tau$是温度参数，一般来说，query$q=f_q(x^q)$，相应的，$k=f_k(x^k)。$$f_q，f_k$都是一个编码器网络，二者可以参数完全相同，也可以部分共享参数，甚至完全不同而$x_q，x_k$既可以是图片，也可以只是patch，或者是一系列的patch。</p>
+<p>作者认为对比学习是在高维连续输入上构建离散字典的方法，由于key是随机采样产生的，并且$f_k$会在训练过程中进化，因此这个字典是动态的。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/image-20200822184022179.png" alt="image-20200822184022179" style="zoom:80%;" /></p>
+<p>作者还提到，使用队列的方法构建字典会使字典变大，但是也使得通过反向传播更新编码器参数变得困难，很简单的解决方法可以通过将$f_q$的梯度复制到$f_k$中，以忽略$f_k$的梯度，但是作者通过试验发现这样的<strong>效果很差</strong>，作者猜测可能的原因是因为<strong>编码器的快速更新降低了编码出来的关键表示的一致性</strong>。因此作者放弃了参数共享的想法，转而采用速度较慢的动量更新来解决这个问题，从而在一定程度上保证了队列中各个key之间的一致性。最终采用如下公式更新$f_k$的参数：</p>
+<script type="math/tex; mode=display">
+θ_k←mθ_k+(1-m)θ_q</script><p>m就是动量置信度，属于[0,1)，在这个过程中，只有$f_q$的参数通过loss使用反向传播进行更新，并且在实际应用过程中，一般将m设置为比较大的值，以使得$f_k$的更新尽量缓慢，从而使每个k的相似度更好，本文设置的m的默认值是0.999（作者实验表明，更大的动量值比更小的动量值表现得更好，也就是说$enc_k$的更新越慢越好）.</p>
+<h2 id="3-与其他方法的对比"><a href="#3-与其他方法的对比" class="headerlink" title="3 与其他方法的对比"></a>3 与其他方法的对比</h2><p>作者对比了另外两种方法，分析了这两种方法的缺点：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.2.png" alt="三种方法对比" style="zoom:80%;" /></p>
+<ol>
+<li><p><strong>end-to-end</strong>端到端</p>
+<p>端到端的编码方法是最基础的方法之一，用当前mini batch中的示例构建字典，每一个key都是通过相同参数的$f_k$编码得到的，相当于是被一致编码。但是字典大小与mini batch大小叠加，受到GPU内存的限制，同时也有大mini batch优化上的问题。最近的一些方法基于局部位置驱动的借口任务，字典的大小可以通过多个局部增大，但是这种架构需要特殊的网络设计，会使得网络向下游任务的传输更加复杂。</p>
+</li>
+<li><p><strong>memory bank</strong>记忆库</p>
+<p>另一种方法是记忆库方法，一个记忆库由数据集中所有样本的表征组成，每一个mini batch的字典通过从记忆库中随机采样获得，而不需要进行反向传播，因此可以支持很大的字典，但是记忆库中方你样本的表征在最后一次看到样本时会被更新，导致采样的key在过去的时间里基本上是在编码器的不同步骤上生成的，不太一致。</p>
+</li>
+</ol>
+<h2 id="4-技术细节"><a href="#4-技术细节" class="headerlink" title="4 技术细节"></a>4 技术细节</h2><p>在构造实验时，将与query q来自于同一图像的key k构造成一组正对，来自其他图像的key则视为负示例，在实现时也是对一张图像进行数据增强，生成两个随机子样本作为一对正对，之后将增强后的子样本分别投入$f_q，f_k$，生成q与k。编码器可以是任意的卷积神经网络。</p>
+<p>在具体实现时，用如下算法进行构造：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.3.png" alt="算法伪代码" style="zoom:80%;" /></p>
+<p>此外，对于编码器，本文使用了ResNet50，之后进行全局平均池化，再经过一个全连接层，输出一个128维的向量，按照l2范数进行归一化处理，得到最终的q与k的表征。温度参数设置为0.07。</p>
+<p>进行数据增强时，从随即调整大小后的图像中裁剪出224*224大小的图像，之后再进行随机的颜色抖动、随机水平翻转与随机灰度转换处理得到子样本。</p>
+<p>Shuffling BN</p>
+<p>多GPU训练时会造成信息泄露，一个解决方法是，在对key进行BN时，先对当前的mini batch进行顺序洗牌，在编码后再次进行顺序洗牌，而对q不进行处理。</p>
+<h2 id="5-实验"><a href="#5-实验" class="headerlink" title="5 实验"></a>5 实验</h2><p><strong>实验数据集包括</strong>：ImageNet的训练集（128万张）、Instagram上1500个话题中的9400万张图像，话题内容与ImageNet上的类别对应，与ImageNet相比，这个数据集上的图像有一个长尾的，不平衡的数据分布，更接近真实世界的数据。</p>
+<p><strong>实验用的优化算法</strong>：用的是SGD算法，动量设为0.9，在ImageNet上的Batch Size是256，用了8块GPU，初始学习率0.03，训练200个epoch，在120和160个epoch时将学习率乘以0.1；在Instagram数据集上的Batch Size为1024，用了64块GPU，初始学习率为0.12，在每62.5k的iterations时将学习率用指数衰减0.9倍，共训练125万个iterations。二者用的都是ResNet50。</p>
+<h3 id="5-1-线性分类评估"><a href="#5-1-线性分类评估" class="headerlink" title="5.1 线性分类评估"></a>5.1 线性分类评估</h3><p>本实验在Image Net数据集上进行。首先训练好Moco和其他对比模型，之后冻结feature，把模型输出的feature作为监督训练一个线性分类器100个epoch，之后测量1-crop和top-1精度。</p>
+<ol>
+<li><strong>与其他对比架构的性能比较</strong></li>
+</ol>
+<p>这个实验比较了他之前提到的end-to-end和memory bank的机制，都使用InfoNCE loss。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.4.png" alt="与其他架构的消融实验对比" style="zoom:80%;" /></p>
+<p>可以看到，Moco的性能表现确实最好，而且三种方式都能受益于更大的K，也就是更大的字典数量更有助于提升性能。此外，Moco和memory bank可以实现更大的K，而end-to-end的架构使得其算力限制了对大字典的支持。</p>
+<p>作者还探究了不同momentum的影响，发现取0.999时表现最好。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.5.png" alt="不同momentum的精度" style="zoom:80%;" /></p>
+<ol>
+<li><strong>与其他非监督学习方法的比较</strong></li>
+</ol>
+<p>在这一部分，作者比较了K设为65536，m设为0.999时，ResNet50下不同非监督方法的性能，还比较了2×和4×宽度的网络的表现效果，具体来说，综合对比了<strong>参数数量</strong>和<strong>分类精度</strong>。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.6.png" alt="点状图" style="zoom:80%;" /></p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.7.png" style="zoom:80%;" /></p>
+<p>根据实验结果，Moco在ResNet50下的精度达到了60.6%，是同等参数数量的网络中最好的，并且在4×网络下达到了<strong>68.6%</strong>，而且没有对网络采用什么特殊的架构。</p>
+<h3 id="5-2-迁移特征"><a href="#5-2-迁移特征" class="headerlink" title="5.2 迁移特征"></a>5.2 迁移特征</h3><p>这一部分主要做的是用训练好的模型与其他在ImageNet训练好的模型做分割与检测实验，用的数据集是PASCAL VOC和COCO。</p>
+<p>在进行实验之前，首先进行了特征正则化，用的方法是对经过训练的BN进行微调（并且在GPU之间同步），之后在新初始化的层中也使用BN，用来校准 magnitudes。</p>
+<p>作者还控制了Schedule，这一部分没有太搞清楚，后期继续学习，在具体控制时，COCO是1×（大约12个epoch）或2×的schedule；</p>
+<ol>
+<li><strong>在PASCAL VOC上进行目标检测</strong></li>
+</ol>
+<p>目标检测模型是Faster R-CNN，主干是ResNet50-dilated-C5或ResNet50-C4，应用已经调好的BN。对所有层都进行端到端的微调。</p>
+<p>训练时的图像是[480,800]的像素，推理时用的是800，评估默认的VOC度量为$AP_{50}$（IoU阈值为50%：交并比，即模型画出的框与人工标注框的重叠率在50%以上，则认为通过测试）和COO-style $AP$和$AP_{75}$，在VOC test2007上进行实验。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.8.png" style="zoom:80%;" /></p>
+<p>可以看到Moco在Instagram下训练的效果会比有监督的ResNet50好。</p>
+<p>和其他对比学习框架比起来表现也更优异：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.12.png" style="zoom:80%;" /></p>
+<p>一般来说，无监督方法的预测结果都要差一些，但是Moco的性能在有些测试中比有监督方法还要好：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.9.png" alt="不同方法对比"></p>
+<ol>
+<li><strong>在COCO上进行目标检测</strong></li>
+</ol>
+<p>目标检测模型是Mask R-CNN，主干是FPN或C4，应用已经调好的BN。对所有层都进行端到端的微调。</p>
+<p>训练时的图像是[640,800]的像素，推理时用的是800，评估默认的VOC度量为$AP_{50}$（IoU阈值为50%：交并比，即模型画出的框与人工标注框的重叠率在50%以上，则认为通过测试）和COCO-style $AP$和$AP_{75}$，在train2007数据集上进行微调，在val2017上进行评估，schedule是默认的1×或2×。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.10.png" alt="COCO上的实验结果"></p>
+<p>可以看到，MOCO的表现基本上好于有监督模型，此外，在执行特定任务的，Moco的表现也不错：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.11.png" alt="Moco表现情况" style="zoom:80%;" /></p>
+<h2 id="6-基于SimCLR的改进版Moco-v2"><a href="#6-基于SimCLR的改进版Moco-v2" class="headerlink" title="6 基于SimCLR的改进版Moco v2"></a>6 基于SimCLR的改进版Moco v2</h2><p>SimCLR是一个end-to-end的对比学习框架，取得了比较好的效果，受SimCLR的启发，作者对Moco进行了改进，主要是对数据增强的方法进行了改进，并添加了SimCLR中的MLP投影头，提升了网络的性能(在Image Net上线性分类的表现提升了6.9%)。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Moco%EF%BC%9A%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%20/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1104,7 +1292,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-count">6</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
