@@ -231,6 +231,367 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Supervised%20Contrastive%20Learning%EF%BC%9A%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/19/Supervised%20Contrastive%20Learning%EF%BC%9A%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T14:56:15+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Supervised-Contrastive-Learning：有监督对比学习"><a href="#Supervised-Contrastive-Learning：有监督对比学习" class="headerlink" title="Supervised Contrastive Learning：有监督对比学习"></a>Supervised Contrastive Learning：有监督对比学习</h1><h2 id="1-概要"><a href="#1-概要" class="headerlink" title="1 概要"></a>1 概要</h2><p>交叉熵损失是监督学习中应用最广泛的损失函数，度量两个分布（标签分布和经验回归分布）之间的KL散度，但是也存在对于有噪声的标签缺乏鲁棒性、可能存在差裕度（允许有余地的余度）导致泛化性能下降的问题。而大多数替代方案还不能很好地用于像ImageNet这样的大规模数据集。</p>
+<p>许多对正则交叉熵的改进实际上是通过对loss定义的放宽进行的，特别是参考分布是轴对称的。这写改进通常具有不同的动机：比如标签平滑（Label smoothing）通过偏离轴来模糊区分正确和不正确的标签，从而在许多应用中提供了很小但是很重要的提升；在自蒸馏中，利用前几轮的“软”标签作为参考类分布进行多轮交叉熵训练；混合和相关数据增强策略通常通过线性插值创建明确的、新的训练示例，然后将相同的线性插值应用于目标标签分布，类似于软化原始交叉熵loss。用这些修改方法训练的模型显示了改进的泛化、鲁棒性和校准。</p>
+<p>本文提出了一个新的loss，受对比loss与度量学习启发，完全去除参考分布，而只是将来自相同类的规范化嵌入强行加在一起，使得其比来自不同类的嵌入更加紧密。</p>
+<p>具体来说，在对比学习中，核心思想是拉近某一个锚点与其正样本之间的距离，拉远锚点与该锚点其他负样本之间的距离，通常来说，一个锚点只有一个正样本，其他全视为负样本。而本文的方法认为每个锚点有许多的正样本，而不是许多负样本，并且通过标签显示样本之间的正负关联。比如下面的图，右侧是典型的对比学习方法，通常将一张原图通过数据增强得到两个子样本，这一对子样本之间构成一对正对，而与其他数据的子样本构成负对；而本文的有监督对比学习中，每个子样本可能都有很多的正对和负对。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASupervised%20Contrastive%20Learning%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.1.png" alt="正负对示例" style="zoom: 67%;" />
+
+<p>本文构造的loss在ResNet50和ResNet200上都取得了不错的Top-1效果，在自动增强的ResNet50上取得78。8%的Top-1精度，比同样数据增强下的交叉熵loss提升了1.6%，不仅如此，还更鲁棒。</p>
+<p>具体的Contribution如下：</p>
+<ol>
+<li>我们提出了一个新的扩展对比损失函数，允许每个锚点有多个正对。因此，我们将对比学习适应于完全监督的设置。</li>
+<li>我们表明，与交叉熵相比，这种损失使我们能够了解最先进的表示方式，从而显著提高了Top-1的准确性和鲁棒性。</li>
+<li>我们的损失对超参数范围的敏感性不如交叉熵。这是一个重要的实际考虑。我们相信，这是由于我们的损失使用更自然的公式，使从同一类样本的代表被拉得更近，而不是像交叉熵一样强迫他们被拉向一个特定的目标。</li>
+<li>我们分析地表明，我们的损失函数的梯度鼓励从hard positive和hard negative中学习。我们还表明，三联体损失是我们损失只有一个正极和负极被使用的一个特例。</li>
+</ol>
+<p>具体来说，有监督对比学习的框架是交叉熵loss和传统对比学习的结合:</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASupervised%20Contrastive%20Learning%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.2.png" alt="三种框架" style="zoom:80%;" />
+
+<h2 id="2-具体结构"><a href="#2-具体结构" class="headerlink" title="2 具体结构"></a>2 具体结构</h2><h3 id="2-1-表征学习框架"><a href="#2-1-表征学习框架" class="headerlink" title="2.1 表征学习框架"></a>2.1 表征学习框架</h3><p>总的来说，有监督对比学习框架的结构类似于表征学习框架，由如下几个部分组成：</p>
+<ol>
+<li><p><strong>数据增强模块</strong></p>
+<p>数据增强模块$A(·)$的作用是将输入图像转换为随机增强的图像$\widetilde{x}$，对每张图像都生成两张增强的子图像，代表原始数据的不同视图。数据增强分为两个阶段：第一阶段是对数据进行<strong>随机裁剪</strong>，然后将其调整为原分辨率大小；第二阶段使用了三种不同的增强方法，具体包括：（1）<strong>自动增强</strong>，（2）<strong>随机增强</strong>，（3）<strong>Sim增强</strong>（按照顺序进行随机颜色失真和高斯模糊，并可能在序列最后进行额外的稀疏图像扭曲操作）。</p>
+</li>
+<li><p><strong>编码器网络</strong></p>
+<p>编码器网络$E(·)$的作用是将增强后的图像$\widetilde{x}$映射到表征空间，每对子图像输入到同一个编码器中得到一对表征向量，本文用的是ResNet50和ResNet200，最后使用池化层得到一个2048维的表征向量。表征层使用单位超球面进行正则化。</p>
+</li>
+<li><p><strong>投影网络</strong></p>
+<p>投影网络$P(·)$的作用是将表征向量映射成一个最终向量$z$进行loss的计算，本文用的是只有一个隐藏层的多层感知器，输出维度为128。同样使用单位超球面进行正则化。在训练完成后，这个网络会被一个单一线性层取代。</p>
+</li>
+</ol>
+<h3 id="2-2-对比损失"><a href="#2-2-对比损失" class="headerlink" title="2.2 对比损失"></a>2.2 对比损失</h3><p>本文的数据是带有标签的，采用mini batch的方法获取数据，首先从数据中随机采样$N$个样本对，记为$\left&lt;!–swig￼0–&gt;\<br>\mathcal{L}<em>{i}^{self}=-\log\frac{\exp(z_i·z_{j(i)}/\tau)}{\sum</em>{k=1}^{2N}{\mathbb{l}<em>{[k{\neq}i]}·\exp(z_i·z_{j(i)}/\tau)}}<br>$$<br>上式中，$\mathbb{l}</em>{[k{\neq}i]}$是一个指示函数，当且仅当$k=i$时取0，否则为1。$\tau$是进行优化的温度参数。该loss的意义在于拉近$\widetilde{x}<em>i$于其正对$\widetilde{x}</em>{j(i)}$之间的距离而拉远$\widetilde{x}_i$与其他负对之间的距离。</p>
+<h4 id="2-2-2-有监督的对比损失"><a href="#2-2-2-有监督的对比损失" class="headerlink" title="2.2.2 有监督的对比损失"></a>2.2.2 有监督的对比损失</h4><p>有监督对比损失是对自监督对比损失的推广，从公式中很容易可以看出，有监督对比损失拓展了$\widetilde{x}<em>i$正对的数量，将所有标签信息相同的子数据都视为正对，计算了$\widetilde{x}<em>i$与其所有正对之间的相似性，之后进行加权平均。<br>$$<br>\mathcal{L}^{sup}=\sum</em>{i=1}^{2N}{\mathcal{L}</em>{i}^{sup}}\<br>\mathcal{L}<em>{i}^{sup}=\frac{-1}{2N</em>{\widetilde{y}<em>i}-1}\sum</em>{j=1}^{2N}{\mathbb{l}<em>{[i{\neq}j]}·\mathbb{l}</em>{[{\widetilde{y}<em>i}={\widetilde{y}_j}]}}·\log\frac{\exp(z_i·z</em>{j(i)}/\tau)}{\sum_{k=1}^{2N}{\mathbb{l}_{[k{\neq}i]}·\exp(z_i·z_{j(i)}/\tau)}}<br>$$<br>作者指出对比损失的核心是足够多的负对，以便与正对形成鲜明的对比，他们的改进监督对比损失保留了这一特性。此外，由于增加了正对的数量，这一架构还可以更好地刻画类内相似性。</p>
+<h4 id="2-2-3-有监督对比损失的梯度特性"><a href="#2-2-3-有监督对比损失的梯度特性" class="headerlink" title="2.2.3 有监督对比损失的梯度特性"></a>2.2.3 有监督对比损失的梯度特性</h4><p>这一部分论证了hard positive和hard negative更有助于提升网络的性能，主要是通过对有监督对比损失的梯度进行分析，在此略去。</p>
+<p>此外，作者在论文中还论述了三联loss是他们的有监督对比损失的特例，此处省略不讲。</p>
+<h2 id="3-实验"><a href="#3-实验" class="headerlink" title="3 实验"></a>3 实验</h2><p>作者在评估其框架性能时，使用了<strong>Top-1精度</strong>和<strong>对损坏图像的鲁棒性</strong>两个方面进行衡量，还评价了其模型<strong>对超参数的稳定性</strong>以及<strong>正对数量</strong>对模型表现的影响。在实现上，使用的是训练好的网络，之后将网络的非线性投影头替换成一个简单的线性全连接层，使用标准交叉熵损失训练这个线性层。网络的训练在ImageNet上进行。</p>
+<h3 id="3-1-ImageNet分类精度"><a href="#3-1-ImageNet分类精度" class="headerlink" title="3.1 ImageNet分类精度"></a>3.1 ImageNet分类精度</h3><p>这部分实验比较了他们的方法与其他使用交叉熵的有监督方法的Top-1与Top-5精度，同时对比了他们的架构使用交叉熵损失的表现，可以看到，综合来说他们的方法实现了最好的效果，同时，他们的架构在使用交叉熵损失时的表现就不是非常好，相对来说，他们的架构在改进loss的情况下，Top-1精度提升了3.8/2.8个点，Top-5精度提升了1/2.3个点。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASupervised%20Contrastive%20Learning%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.3.png" alt="线性分类评估" style="zoom:80%;" />
+
+<h3 id="3-2-对图像损坏和校准的鲁棒性"><a href="#3-2-对图像损坏和校准的鲁棒性" class="headerlink" title="3.2 对图像损坏和校准的鲁棒性"></a>3.2 对图像损坏和校准的鲁棒性</h3><p>这部分实验评价了他们的方法对图像扰动的稳定性，具体来说，他们选择使用对ImageNet数据库中的图像应用常见的自然扰动，比如加噪声、模糊和对比度变化，构造得到的ImageNet-c数据集进行测试。使用平均损坏误差与平均相对损坏误差作为评价指标，可以看到，他们的方法的误差最小，且使用改进的对比损失替换交叉熵损失也有助于提升网络的性能。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASupervised%20Contrastive%20Learning%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.4.png" alt="平均损坏误差" style="zoom:80%;" />
+
+<p>此外，和交叉熵损失相比，本文的对比损失在不同程度的图像损坏下都能保持一个相对稳定的平均损失误差，相比于交叉熵损失也有更高的Top-1精度：</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASupervised%20Contrastive%20Learning%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.8.png" alt="与交叉熵损失的对比" style="zoom: 67%;" />
+
+<h3 id="3-3-对超参数的鲁棒性"><a href="#3-3-对超参数的鲁棒性" class="headerlink" title="3.3 对超参数的鲁棒性"></a>3.3 对超参数的鲁棒性</h3><p>通常深度网络对超参数都很敏感，本文还比较了他们的改进对比损失对不同优化器、不同数据增强和学习率的分类精度稳定性。三种增强方式是本文提出的三种；优化器则选用了LARS、带动量的SGD和RMSProp；选择了最佳学习率以及增大或减小十倍的三个学习率进行评估，可以发现，本文提出的loss确实和交叉熵损失相比，对这三种超参数的变化更鲁棒。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASupervised%20Contrastive%20Learning%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.5.png" alt="对超参数的鲁棒性" style="zoom:67%;" />
+
+<h3 id="3-4-不同正对数量对模型表现的影响"><a href="#3-4-不同正对数量对模型表现的影响" class="headerlink" title="3.4 不同正对数量对模型表现的影响"></a>3.4 不同正对数量对模型表现的影响</h3><p>作者对比了每个子数据有1、2、3、5个正对时的Top-1精度，发现正对越多越有助于提升模型表现，当然同时计算成本也更大。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASupervised%20Contrastive%20Learning%E6%9C%89%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.7.png" alt="不同正对数量的影响" style="zoom:80%;" />
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Moco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%20/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/19/Moco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%20/" itemprop="url">未命名</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T14:56:15+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Moco-无监督视觉表征学习的动量对比"><a href="#Moco-无监督视觉表征学习的动量对比" class="headerlink" title="Moco: 无监督视觉表征学习的动量对比"></a>Moco: 无监督视觉表征学习的动量对比</h1><h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a>1 概述</h2><p>在NLP领域，无监督表征学习有GPT、BERT等效果非常好的模型，但是CV领域还是有监督模型作为主流。作者认为主要是因为CV和NLP领域处理的数据对应的信号空间不同：语言任务有离散的信号空间，词语词之间可以视为是独立的词组，能够很方便地构成字典（Dictionary），这种词典是无监督学习便于学习依赖的特征；而视觉领域的原始信号是在一个连续且高维空间中，无法成为结构化的信号，使得无监督学习难以展现在NLP领域发挥出的效果。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.1.png" alt="moco原理" style="zoom:80%;" />
+
+<p>作者提出了一种动态字典，即MOCO，新的minibatch对应的字典在进入队列时，将会替换最早进入的字典，使得字典始终是所有数据的子集，又始终代表最新的表征，经过试验发现，Moco的表现非常之好。</p>
+<h2 id="2-思想"><a href="#2-思想" class="headerlink" title="2 思想"></a>2 思想</h2><p>对比学习的思想在于，通过一些已编码的query（q），使其与其对应的key（k）相对应，k是被编码的样本的在字典中的key$\lbrace k_0,k_1,k_2…\rbrace$，假设$q$与$k_+$相匹配，对比损失的目的是尽量拉近$q$与$k_+$之间的距离而增大$q$与其他$k_i$之间的距离（拉近正对，缩小负对，其他的$k_i$都是负对），Moco用的是点积的方法衡量相似度，称为InfoNCE loss：<br>$$<br>\ell_{i,j}=-\log\frac{\exp(q·k_+/\tau)}{\sum_{i=0}^{K}{\exp(q·k_i/\tau)}}<br>$$<br>其中，$\tau$是温度参数，一般来说，query$q=f_q(x^q)$，相应的，$k=f_k(x^k)。$$f_q，f_k$都是一个编码器网络，二者可以参数完全相同，也可以部分共享参数，甚至完全不同而$x_q，x_k$既可以是图片，也可以只是patch，或者是一系列的patch。</p>
+<p>作者认为对比学习是在高维连续输入上构建离散字典的方法，由于key是随机采样产生的，并且$f_k$会在训练过程中进化，因此这个字典是动态的。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/image-20200822184022179.png" alt="image-20200822184022179" style="zoom:80%;" />
+
+<p>作者还提到，使用队列的方法构建字典会使字典变大，但是也使得通过反向传播更新编码器参数变得困难，很简单的解决方法可以通过将$f_q$的梯度复制到$f_k$中，以忽略$f_k$的梯度，但是作者通过试验发现这样的<strong>效果很差</strong>，作者猜测可能的原因是因为<strong>编码器的快速更新降低了编码出来的关键表示的一致性</strong>。因此作者放弃了参数共享的想法，转而采用速度较慢的动量更新来解决这个问题，从而在一定程度上保证了队列中各个key之间的一致性。最终采用如下公式更新$f_k$的参数：<br>$$<br>θ_k←mθ_k+(1-m)θ_q<br>$$<br>m就是动量置信度，属于[0,1)，在这个过程中，只有$f_q$的参数通过loss使用反向传播进行更新，并且在实际应用过程中，一般将m设置为比较大的值，以使得$f_k$的更新尽量缓慢，从而使每个k的相似度更好，本文设置的m的默认值是0.999（作者实验表明，更大的动量值比更小的动量值表现得更好，也就是说enc_k的更新越慢越好）.</p>
+<h2 id="3-与其他方法的对比"><a href="#3-与其他方法的对比" class="headerlink" title="3 与其他方法的对比"></a>3 与其他方法的对比</h2><p>作者对比了另外两种方法，分析了这两种方法的缺点：</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.2.png" alt="三种方法对比" style="zoom:80%;" />
+
+<ol>
+<li><p><strong>end-to-end</strong>端到端</p>
+<p>端到端的编码方法是最基础的方法之一，用当前mini batch中的示例构建字典，每一个key都是通过相同参数的$f_k$编码得到的，相当于是被一致编码。但是字典大小与mini batch大小叠加，受到GPU内存的限制，同时也有大mini batch优化上的问题。最近的一些方法基于局部位置驱动的借口任务，字典的大小可以通过多个局部增大，但是这种架构需要特殊的网络设计，会使得网络向下游任务的传输更加复杂。</p>
+</li>
+<li><p><strong>memory bank</strong>记忆库</p>
+<p>另一种方法是记忆库方法，一个记忆库由数据集中所有样本的表征组成，每一个mini batch的字典通过从记忆库中随机采样获得，而不需要进行反向传播，因此可以支持很大的字典，但是记忆库中方你样本的表征在最后一次看到样本时会被更新，导致采样的key在过去的时间里基本上是在编码器的不同步骤上生成的，不太一致。</p>
+</li>
+</ol>
+<h2 id="4-技术细节"><a href="#4-技术细节" class="headerlink" title="4 技术细节"></a>4 技术细节</h2><p>在构造实验时，将与query q来自于同一图像的key k构造成一组正对，来自其他图像的key则视为负示例，在实现时也是对一张图像进行数据增强，生成两个随机子样本作为一对正对，之后将增强后的子样本分别投入$f_q，f_k$，生成q与k。编码器可以是任意的卷积神经网络。</p>
+<p>在具体实现时，用如下算法进行构造：</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.3.png" alt="算法伪代码" style="zoom:80%;" />
+
+<p>此外，对于编码器，本文使用了ResNet50，之后进行全局平均池化，再经过一个全连接层，输出一个128维的向量，按照l2范数进行归一化处理，得到最终的q与k的表征。温度参数设置为0.07。</p>
+<p>进行数据增强时，从随即调整大小后的图像中裁剪出224*224大小的图像，之后再进行随机的颜色抖动、随机水平翻转与随机灰度转换处理得到子样本。</p>
+<p>Shuffling BN</p>
+<p>多GPU训练时会造成信息泄露，一个解决方法是，在对key进行BN时，先对当前的mini batch进行顺序洗牌，在编码后再次进行顺序洗牌，而对q不进行处理。</p>
+<h2 id="5-实验"><a href="#5-实验" class="headerlink" title="5 实验"></a>5 实验</h2><p><strong>实验数据集包括</strong>：ImageNet的训练集（128万张）、Instagram上1500个话题中的9400万张图像，话题内容与ImageNet上的类别对应，与ImageNet相比，这个数据集上的图像有一个长尾的，不平衡的数据分布，更接近真实世界的数据。</p>
+<p><strong>实验用的优化算法</strong>：用的是SGD算法，动量设为0.9，在ImageNet上的Batch Size是256，用了8块GPU，初始学习率0.03，训练200个epoch，在120和160个epoch时将学习率乘以0.1；在Instagram数据集上的Batch Size为1024，用了64块GPU，初始学习率为0.12，在每62.5k的iterations时将学习率用指数衰减0.9倍，共训练125万个iterations。二者用的都是ResNet50。</p>
+<h3 id="5-1-线性分类评估"><a href="#5-1-线性分类评估" class="headerlink" title="5.1 线性分类评估"></a>5.1 线性分类评估</h3><p>本实验在Image Net数据集上进行。首先训练好Moco和其他对比模型，之后冻结feature，把模型输出的feature作为监督训练一个线性分类器100个epoch，之后测量1-crop和top-1精度。</p>
+<ol>
+<li><strong>与其他对比架构的性能比较</strong></li>
+</ol>
+<p>这个实验比较了他之前提到的end-to-end和memory bank的机制，都使用InfoNCE loss。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.4.png" alt="与其他架构的消融实验对比" style="zoom:80%;" />
+
+<p>可以看到，Moco的性能表现确实最好，而且三种方式都能受益于更大的K，也就是更大的字典数量更有助于提升性能。此外，Moco和memory bank可以实现更大的K，而end-to-end的架构使得其算力限制了对大字典的支持。</p>
+<p>作者还探究了不同momentum的影响，发现取0.999时表现最好。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.5.png" alt="不同momentum的精度" style="zoom:80%;" />
+
+<ol start="2">
+<li><strong>与其他非监督学习方法的比较</strong></li>
+</ol>
+<p>在这一部分，作者比较了K设为65536，m设为0.999时，ResNet50下不同非监督方法的性能，还比较了2×和4×宽度的网络的表现效果，具体来说，综合对比了<strong>参数数量</strong>和<strong>分类精度</strong>。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.6.png" alt="点状图" style="zoom:80%;" />
+
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.7.png" style="zoom:80%;" />
+
+<p>根据实验结果，Moco在ResNet50下的精度达到了60.6%，是同等参数数量的网络中最好的，并且在4×网络下达到了**68.6%**，而且没有对网络采用什么特殊的架构。</p>
+<h3 id="5-2-迁移特征"><a href="#5-2-迁移特征" class="headerlink" title="5.2 迁移特征"></a>5.2 迁移特征</h3><p>这一部分主要做的是用训练好的模型与其他在ImageNet训练好的模型做分割与检测实验，用的数据集是PASCAL VOC和COCO。</p>
+<p>在进行实验之前，首先进行了特征正则化，用的方法是对经过训练的BN进行微调（并且在GPU之间同步），之后在新初始化的层中也使用BN，用来校准 magnitudes。</p>
+<p>作者还控制了Schedule，这一部分没有太搞清楚，后期继续学习，在具体控制时，COCO是1×（大约12个epoch）或2×的schedule；</p>
+<ol>
+<li><strong>在PASCAL VOC上进行目标检测</strong></li>
+</ol>
+<p>目标检测模型是Faster R-CNN，主干是ResNet50-dilated-C5或ResNet50-C4，应用已经调好的BN。对所有层都进行端到端的微调。</p>
+<p>训练时的图像是[480,800]的像素，推理时用的是800，评估默认的VOC度量为$AP_{50}$（IoU阈值为50%：交并比，即模型画出的框与人工标注框的重叠率在50%以上，则认为通过测试）和COO-style $AP$和$AP_{75}$，在VOC test2007上进行实验。</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.8.png" style="zoom:80%;" />
+
+<p>可以看到Moco在Instagram下训练的效果会比有监督的ResNet50好。</p>
+<p>和其他对比学习框架比起来表现也更优异：</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.12.png" style="zoom:80%;" />
+
+<p>一般来说，无监督方法的预测结果都要差一些，但是Moco的性能在有些测试中比有监督方法还要好：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.9.png" alt="不同方法对比"></p>
+<ol start="2">
+<li><strong>在COCO上进行目标检测</strong></li>
+</ol>
+<p>目标检测模型是Mask R-CNN，主干是FPN或C4，应用已经调好的BN。对所有层都进行端到端的微调。</p>
+<p>训练时的图像是[640,800]的像素，推理时用的是800，评估默认的VOC度量为$AP_{50}$（IoU阈值为50%：交并比，即模型画出的框与人工标注框的重叠率在50%以上，则认为通过测试）和COCO-style $AP$和$AP_{75}$，在train2007数据集上进行微调，在val2017上进行评估，schedule是默认的1×或2×。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.10.png" alt="COCO上的实验结果"></p>
+<p>可以看到，MOCO的表现基本上好于有监督模型，此外，在执行特定任务的，Moco的表现也不错：</p>
+<img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.11.png" alt="Moco表现情况" style="zoom:80%;" />
+
+<h2 id="6-基于SimCLR的改进版Moco-v2"><a href="#6-基于SimCLR的改进版Moco-v2" class="headerlink" title="6 基于SimCLR的改进版Moco v2"></a>6 基于SimCLR的改进版Moco v2</h2><p>SimCLR是一个end-to-end的对比学习框架，取得了比较好的效果，受SimCLR的启发，作者对Moco进行了改进，主要是对数据增强的方法进行了改进，并添加了SimCLR中的MLP投影头，提升了网络的性能(在Image Net上线性分类的表现提升了6.9%)。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://example.com/2020/12/26/%E3%80%8AContrastive%20Learning%20with%20Hard%20Negative%20Samples%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -744,7 +1105,7 @@
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">3</span>
+                  <span class="site-state-item-count">5</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
