@@ -79,12 +79,12 @@
 
 
 
-<meta name="description" content="SimCLR：用于视觉表征的对比学习框架 1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大； 本文定义了一个对比损失和表征之间的可学习非线性转换，大幅提高了表征的质量； 具有对比交叉熵损失(contrastive cross entropy loss)的表征学习得益于归一化嵌入和适当地调整温度参数；">
+<meta name="description" content="论文链接: https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2002.05709.pdf 官方github链接: https:&#x2F;&#x2F;github.com&#x2F;google-research&#x2F;simclr 他人复现pytorch链接: https:&#x2F;&#x2F;github.com&#x2F;sthalles&#x2F;SimCLR   1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响">
 <meta property="og:type" content="article">
-<meta property="og:title" content="缓缓行舟">
+<meta property="og:title" content="SimCLR：用于视觉表征的对比学习框架">
 <meta property="og:url" content="http://example.com/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/index.html">
 <meta property="og:site_name" content="缓缓行舟">
-<meta property="og:description" content="SimCLR：用于视觉表征的对比学习框架 1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大； 本文定义了一个对比损失和表征之间的可学习非线性转换，大幅提高了表征的质量； 具有对比交叉熵损失(contrastive cross entropy loss)的表征学习得益于归一化嵌入和适当地调整温度参数；">
+<meta property="og:description" content="论文链接: https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2002.05709.pdf 官方github链接: https:&#x2F;&#x2F;github.com&#x2F;google-research&#x2F;simclr 他人复现pytorch链接: https:&#x2F;&#x2F;github.com&#x2F;sthalles&#x2F;SimCLR   1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响">
 <meta property="og:locale">
 <meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif">
 <meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/1.png">
@@ -105,7 +105,7 @@
 <meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/16.png">
 <meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/17.png">
 <meta property="article:published_time" content="2020-09-14T05:27:16.771Z">
-<meta property="article:modified_time" content="2021-01-19T08:49:24.124Z">
+<meta property="article:modified_time" content="2021-01-19T08:52:30.115Z">
 <meta property="article:author" content="微澜">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif">
@@ -144,7 +144,7 @@
 
 
 
-  <title> | 缓缓行舟</title>
+  <title>SimCLR：用于视觉表征的对比学习框架 | 缓缓行舟</title>
   
 
 
@@ -272,7 +272,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline"></h1>
+          <h1 class="post-title" itemprop="name headline">SimCLR：用于视觉表征的对比学习框架</h1>
         
 
         <div class="post-meta">
@@ -322,7 +322,10 @@
       
 
       
-        <h1 id="SimCLR：用于视觉表征的对比学习框架"><a href="#SimCLR：用于视觉表征的对比学习框架" class="headerlink" title="SimCLR：用于视觉表征的对比学习框架"></a>SimCLR：用于视觉表征的对比学习框架</h1><p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif" style="zoom:67%;" /></p>
+        <p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2002.05709.pdf">https://arxiv.org/pdf/2002.05709.pdf</a></p>
+<p>官方github链接: <a target="_blank" rel="noopener" href="https://github.com/google-research/simclr">https://github.com/google-research/simclr</a></p>
+<p>他人复现pytorch链接: <a target="_blank" rel="noopener" href="https://github.com/sthalles/SimCLR">https://github.com/sthalles/SimCLR</a> </p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif" style="zoom:67%;" /></p>
 <h2 id="1-概况"><a href="#1-概况" class="headerlink" title="1 概况"></a>1 概况</h2><p><strong>核心观点：</strong></p>
 <ol>
 <li>数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大；</li>
@@ -568,7 +571,7 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6"><span class="nav-number">1.</span> <span class="nav-text">SimCLR：用于视觉表征的对比学习框架</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A6%82%E5%86%B5"><span class="nav-number">1.1.</span> <span class="nav-text">1 概况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.</span> <span class="nav-text">2 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 对比学习框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%A4%A7Batch-Size%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 大Batch Size训练方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E8%AF%84%E4%BB%B7%E6%96%B9%E6%A1%88"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 评价方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">1.3.</span> <span class="nav-text">3 数据增强</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%B6%B5%E7%9B%96%E4%BA%86%E5%AF%B9%E6%AF%94%E9%A2%84%E6%B5%8B%E4%BB%BB%E5%8A%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%83%85%E5%86%B5"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 数据增强涵盖了对比预测任务的两种情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%96%B9%E5%BC%8F%E7%9A%84%E7%BB%84%E5%90%88%E5%AF%B9%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E6%95%88%E6%9E%9C%E8%87%B3%E5%85%B3%E9%87%8D%E8%A6%81"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 不同数据增强方式的组合对表征学习效果至关重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%AF%94%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E6%9B%B4%E9%9C%80%E8%A6%81%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">1.3.3.</span> <span class="nav-text">3.3 对比学习比监督学习更需要数据增强</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Encoder-%E5%92%8CHead-%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="nav-number">1.4.</span> <span class="nav-text">4 Encoder 和Head 的架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%9B%B4%E5%A4%A7%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BD%BF%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E6%A8%A1%E5%9E%8B%E8%A1%A8%E7%8E%B0%E6%9B%B4%E5%A5%BD"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 更大的模型使无监督对比模型表现更好</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%8A%95%E5%BD%B1head%E6%9C%89%E5%8A%A9%E4%BA%8E%E6%8F%90%E5%8D%87%E5%85%B6%E4%B9%8B%E5%89%8D%E7%BD%91%E7%BB%9C%E5%B1%82%E7%9A%84%E8%A1%A8%E5%BE%81%E8%B4%A8%E9%87%8F"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 非线性投影head有助于提升其之前网络层的表征质量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E5%92%8CBatch-Size"><span class="nav-number">1.5.</span> <span class="nav-text">5 损失函数和Batch Size</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%B8%A6%E6%9C%89%E5%8F%AF%E8%B0%83%E6%B8%A9%E5%BA%A6%E5%8F%82%E6%95%B0%E7%9A%84%E5%BD%92%E4%B8%80%E5%8C%96%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1%E6%98%AF%E6%9B%B4%E4%BC%98%E9%80%89%E6%8B%A9"><span class="nav-number">1.5.1.</span> <span class="nav-text">5.1 带有可调温度参数的归一化交叉熵损失是更优选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%A4%A7Batch-Size%E5%92%8C%E6%9B%B4%E5%A4%9A%E8%AE%AD%E7%BB%83%E5%AF%B9%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%9B%B4%E6%9C%89%E7%9B%8A"><span class="nav-number">1.5.2.</span> <span class="nav-text">5.2 大Batch Size和更多训练对对比学习更有益</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%AE%9E%E9%AA%8C%E5%AF%B9%E6%AF%94"><span class="nav-number">1.6.</span> <span class="nav-text">6 实验对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E7%BA%BF%E6%80%A7%E8%AF%84%E4%BC%B0"><span class="nav-number">1.6.1.</span> <span class="nav-text">6.1 线性评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E5%8D%8A%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.6.2.</span> <span class="nav-text">6.2 半监督学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0"><span class="nav-number">1.6.3.</span> <span class="nav-text">6.3 迁移学习</span></a></li></ol></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A6%82%E5%86%B5"><span class="nav-number">1.</span> <span class="nav-text">1 概况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">2 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 对比学习框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%A4%A7Batch-Size%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 大Batch Size训练方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E8%AF%84%E4%BB%B7%E6%96%B9%E6%A1%88"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 评价方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">3.</span> <span class="nav-text">3 数据增强</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%B6%B5%E7%9B%96%E4%BA%86%E5%AF%B9%E6%AF%94%E9%A2%84%E6%B5%8B%E4%BB%BB%E5%8A%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%83%85%E5%86%B5"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 数据增强涵盖了对比预测任务的两种情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%96%B9%E5%BC%8F%E7%9A%84%E7%BB%84%E5%90%88%E5%AF%B9%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E6%95%88%E6%9E%9C%E8%87%B3%E5%85%B3%E9%87%8D%E8%A6%81"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 不同数据增强方式的组合对表征学习效果至关重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%AF%94%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E6%9B%B4%E9%9C%80%E8%A6%81%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 对比学习比监督学习更需要数据增强</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Encoder-%E5%92%8CHead-%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="nav-number">4.</span> <span class="nav-text">4 Encoder 和Head 的架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%9B%B4%E5%A4%A7%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BD%BF%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E6%A8%A1%E5%9E%8B%E8%A1%A8%E7%8E%B0%E6%9B%B4%E5%A5%BD"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 更大的模型使无监督对比模型表现更好</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%8A%95%E5%BD%B1head%E6%9C%89%E5%8A%A9%E4%BA%8E%E6%8F%90%E5%8D%87%E5%85%B6%E4%B9%8B%E5%89%8D%E7%BD%91%E7%BB%9C%E5%B1%82%E7%9A%84%E8%A1%A8%E5%BE%81%E8%B4%A8%E9%87%8F"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 非线性投影head有助于提升其之前网络层的表征质量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E5%92%8CBatch-Size"><span class="nav-number">5.</span> <span class="nav-text">5 损失函数和Batch Size</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%B8%A6%E6%9C%89%E5%8F%AF%E8%B0%83%E6%B8%A9%E5%BA%A6%E5%8F%82%E6%95%B0%E7%9A%84%E5%BD%92%E4%B8%80%E5%8C%96%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1%E6%98%AF%E6%9B%B4%E4%BC%98%E9%80%89%E6%8B%A9"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 带有可调温度参数的归一化交叉熵损失是更优选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%A4%A7Batch-Size%E5%92%8C%E6%9B%B4%E5%A4%9A%E8%AE%AD%E7%BB%83%E5%AF%B9%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%9B%B4%E6%9C%89%E7%9B%8A"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 大Batch Size和更多训练对对比学习更有益</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%AE%9E%E9%AA%8C%E5%AF%B9%E6%AF%94"><span class="nav-number">6.</span> <span class="nav-text">6 实验对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E7%BA%BF%E6%80%A7%E8%AF%84%E4%BC%B0"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 线性评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E5%8D%8A%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 半监督学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 迁移学习</span></a></li></ol></li></ol></div>
             
 
           </div>
@@ -775,6 +778,26 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
   
 
   
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
   
 
 

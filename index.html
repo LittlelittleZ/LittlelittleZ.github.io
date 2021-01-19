@@ -306,7 +306,9 @@
       
         
           
-            <h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a>1 概述</h2><p>在NLP领域，无监督表征学习有GPT、BERT等效果非常好的模型，但是CV领域还是有监督模型作为主流。作者认为主要是因为CV和NLP领域处理的数据对应的信号空间不同：语言任务有离散的信号空间，词语词之间可以视为是独立的词组，能够很方便地构成字典（Dictionary），这种词典是无监督学习便于学习依赖的特征；而视觉领域的原始信号是在一个连续且高维空间中，无法成为结构化的信号，使得无监督学习难以展现在NLP领域发挥出的效果。</p>
+            <p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/1911.05722">https://arxiv.org/pdf/1911.05722</a> </p>
+<p>官方pytorch链接: <a target="_blank" rel="noopener" href="https://github.com/facebookresearch/moco">https://github.com/facebookresearch/moco</a></p>
+<h2 id="1-概述"><a href="#1-概述" class="headerlink" title="1 概述"></a>1 概述</h2><p>在NLP领域，无监督表征学习有GPT、BERT等效果非常好的模型，但是CV领域还是有监督模型作为主流。作者认为主要是因为CV和NLP领域处理的数据对应的信号空间不同：语言任务有离散的信号空间，词语词之间可以视为是独立的词组，能够很方便地构成字典（Dictionary），这种词典是无监督学习便于学习依赖的特征；而视觉领域的原始信号是在一个连续且高维空间中，无法成为结构化的信号，使得无监督学习难以展现在NLP领域发挥出的效果。</p>
 <p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8AMoco%20%E6%97%A0%E7%9B%91%E7%9D%A3%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%8A%A8%E9%87%8F%E5%AF%B9%E6%AF%94%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.1.png" alt="moco原理" style="zoom:80%;" /></p>
 <p>作者提出了一种动态字典，即MOCO，新的minibatch对应的字典在进入队列时，将会替换最早进入的字典，使得字典始终是所有数据的子集，又始终代表最新的表征，经过试验发现，Moco的表现非常之好。</p>
 <h2 id="2-思想"><a href="#2-思想" class="headerlink" title="2 思想"></a>2 思想</h2><p>对比学习的思想在于，通过一些已编码的query（q），使其与其对应的key（k）相对应，k是被编码的样本的在字典中的key$\lbrace k_0,k_1,k_2…\rbrace$，假设$q$与$k_+$相匹配，对比损失的目的是尽量拉近$q$与$k_+$之间的距离而增大$q$与其他$k_i$之间的距离（拉近正对，缩小负对，其他的$k_i$都是负对），Moco用的是点积的方法衡量相似度，称为InfoNCE loss：</p>
@@ -1088,7 +1090,7 @@
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/" itemprop="url">未命名</a></h1>
+                <a class="post-title-link" href="/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/" itemprop="url">SimCLR：用于视觉表征的对比学习框架</a></h1>
         
 
         <div class="post-meta">
@@ -1140,7 +1142,10 @@
       
         
           
-            <h1 id="SimCLR：用于视觉表征的对比学习框架"><a href="#SimCLR：用于视觉表征的对比学习框架" class="headerlink" title="SimCLR：用于视觉表征的对比学习框架"></a>SimCLR：用于视觉表征的对比学习框架</h1><p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif" style="zoom:67%;" /></p>
+            <p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2002.05709.pdf">https://arxiv.org/pdf/2002.05709.pdf</a></p>
+<p>官方github链接: <a target="_blank" rel="noopener" href="https://github.com/google-research/simclr">https://github.com/google-research/simclr</a></p>
+<p>他人复现pytorch链接: <a target="_blank" rel="noopener" href="https://github.com/sthalles/SimCLR">https://github.com/sthalles/SimCLR</a> </p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif" style="zoom:67%;" /></p>
 <h2 id="1-概况"><a href="#1-概况" class="headerlink" title="1 概况"></a>1 概况</h2><p><strong>核心观点：</strong></p>
 <ol>
 <li>数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大；</li>
