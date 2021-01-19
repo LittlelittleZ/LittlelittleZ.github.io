@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="显著性检测的学习选择性自相互注意 CVPR20201 Motivation1) 相比于传统的RGB显著性检测方法，包含深度信息的RGB-D检测可以更好地识别出图像的阳性区域。 2) 以往的RGB-D检测使用的融合策略（如早期融合、结果融合）作用有限。 2 Contribution1) 基于Non-Local，提出一种新的中间融合策略，通过融合深度注意，准确定位出对象的主体。 2) 将注意力机制应用">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D&gt;阅读笔记">
+<meta property="og:url" content="http://example.com/2021/01/19/Learning%20Selective%20Self-Mutual%20Attention%20for%20RGB-D/index.html">
+<meta property="og:site_name" content="缓缓行舟">
+<meta property="og:description" content="显著性检测的学习选择性自相互注意 CVPR20201 Motivation1) 相比于传统的RGB显著性检测方法，包含深度信息的RGB-D检测可以更好地识别出图像的阳性区域。 2) 以往的RGB-D检测使用的融合策略（如早期融合、结果融合）作用有限。 2 Contribution1) 基于Non-Local，提出一种新的中间融合策略，通过融合深度注意，准确定位出对象的主体。 2) 将注意力机制应用">
+<meta property="og:locale">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/1.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/2.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/3.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/4.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/5.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/image-20200924235304545.png">
+<meta property="article:published_time" content="2021-01-19T13:31:13.123Z">
+<meta property="article:modified_time" content="2021-01-19T13:32:18.164Z">
+<meta property="article:author" content="微澜">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/01/19/Learning Selective Self-Mutual Attention for RGB-D/"/>
+
+
+
+
+
+  <title>《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D>阅读笔记 | 缓缓行舟</title>
+  
+
+
+
+
+
+
+
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">缓缓行舟</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">给行船途中的所感所获一个容身之处</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Learning%20Selective%20Self-Mutual%20Attention%20for%20RGB-D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D>阅读笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T21:31:13+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="显著性检测的学习选择性自相互注意-CVPR2020"><a href="#显著性检测的学习选择性自相互注意-CVPR2020" class="headerlink" title="显著性检测的学习选择性自相互注意 CVPR2020"></a>显著性检测的学习选择性自相互注意 CVPR2020</h1><h2 id="1-Motivation"><a href="#1-Motivation" class="headerlink" title="1 Motivation"></a>1 Motivation</h2><p>1) 相比于传统的RGB显著性检测方法，包含深度信息的RGB-D检测可以更好地识别出图像的阳性区域。</p>
+<p>2) 以往的RGB-D检测使用的融合策略（如早期融合、结果融合）作用有限。</p>
+<h2 id="2-Contribution"><a href="#2-Contribution" class="headerlink" title="2 Contribution"></a>2 Contribution</h2><p>1) 基于Non-Local，提出一种新的中间融合策略，通过融合深度注意，准确定位出对象的主体。</p>
+<p>2) 将注意力机制应用于双流CNN模型，并引入新的残差融合模块，提高了显著性检测的性能，优于所有现存方法。</p>
+<h2 id="3-Approach"><a href="#3-Approach" class="headerlink" title="3 Approach"></a>3 Approach</h2><p>本文使用的注意力模型基于Non Local，是在此基础上进行的改进。整个模型框架如下图右侧图像所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/1.png" alt="1">如上图所示，不包含深度信息的RGB方法的检测结果含有很严重的假阳性高亮区域。</p>
+<h3 id="3-1-Non-Local模块"><a href="#3-1-Non-Local模块" class="headerlink" title="3.1 Non Local模块"></a>3.1 Non Local模块</h3><p>​        首先简要介绍一种non local模块，如上图左侧部分所示，Non Local模型首先将输入的feature map$\boldsymbol{X}$用三个不同权值的1×1卷积层嵌入到三个通道数均为$C_1$的特征空间中。</p>
+<p>​        之后，计算经过$W_{\theta}$与$W_{\phi}$嵌入之后的$\boldsymbol{X}$两个不同视图每个像素点之间的相关性。此处的计算方法是简单的矩阵乘法：</p>
+<script type="math/tex; mode=display">
+f(\boldsymbol{X})=\theta(\boldsymbol{X}) \phi(\boldsymbol{X})^{\top}</script><p>​        然后，使用softmax对$f(\boldsymbol{X})$进行行归一化处理得到$\boldsymbol{X}$的注意力矩阵，第$i$一行即表示像素点$i$与其他点之间的注意力权重情况。</p>
+<script type="math/tex; mode=display">
+A(\boldsymbol{X})=softmax(f(\boldsymbol{X}))</script><p>​        再将得到的注意力矩阵与$\boldsymbol{X}$的另一个嵌入视图$g(\boldsymbol{X})$相乘，即得到最终的包含注意力信息的特征$\boldsymbol{Y}$</p>
+<script type="math/tex; mode=display">
+\boldsymbol{Y}=A(\boldsymbol{X})g(\boldsymbol{X})</script><p>​        最后，引入一个残差模块，得到最终的输出特征：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{Z}=\boldsymbol{Y}W_\boldsymbol{Z}+\boldsymbol{X}</script><h3 id="3-2-自-互注意力"><a href="#3-2-自-互注意力" class="headerlink" title="3.2 自-互注意力"></a>3.2 自-互注意力</h3><p>Non Local模块本质上是对自身特征的双线性投影，属于self-attention的范畴，在此基础上，作者提出引入相互注意力，以提升RGB-D任务定义多模态特征的显著性检测水平，因此提出了如上图所示右侧的网络架构，称为SMA（Self-Mutual Attention）。SMA的思路如下：</p>
+<p>对于给定的图像在RGB模态与D模态下的feature map$\boldsymbol{X}^r$与$\boldsymbol{X}^d$，基于NL模型，计算二者各自的相关性矩阵$f(\boldsymbol{X}^r)$与$f(\boldsymbol{X}^d)$，将二者通过简单相加的方法进行融合，得到一个新的注意力矩阵：</p>
+<script type="math/tex; mode=display">
+A^f(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^r(\boldsymbol{X}^r)+f^d(\boldsymbol{X}^d))</script><p>使用融合注意力矩阵代替各自的注意力矩阵计算$\boldsymbol{X}^r$与$\boldsymbol{X}^d$各自的注意力特征，得到最终的输出特征$\boldsymbol{Z}^r$与$\boldsymbol{Z}^d$。</p>
+<p>作者认为融合注意力矩阵相比于各自独立的注意力矩阵包含了RGD与D模态下的注意力信息，使得学习到的注意力更加准确，并且在实验中切实提高了模型表现。</p>
+<h3 id="3-3-选择性自-互注意力"><a href="#3-3-选择性自-互注意力" class="headerlink" title="3.3 选择性自-互注意力"></a>3.3 选择性自-互注意力</h3><p>SMA模型对于RGB模态与Deep模态之间的自注意力与相互注意力的选择是平等的，然而作者认为相互注意力并不总是在所有位置都可靠，可能会产生负面干扰。因此作者引入了一个选择机制，对相互注意力的引入程度进行了一定控制。</p>
+<p>具体来说，首先将RGB模态与D模态下的feature map$\boldsymbol{X}^r$与$\boldsymbol{X}^d$拼接成一个张量，维度是[H, W, 2C]，之后经过一个1×1的矩阵进行embedding处理之后，经过softmax处理得到选择注意力矩阵，维度是[H, W, 2]：</p>
+<script type="math/tex; mode=display">
+\alpha=softmax\left(\operatorname{Conv}\left(\left[\boldsymbol{X}^{r}, \boldsymbol{X}^{d}\right]\right)\right)</script><p>将$\alpha$进行拆分，得到模态RGD与D各自的$\alpha^r$与$\alpha^d$，维度是[H, W, 1]，代表每个模态在所有位置上对应的可靠性，即在进行注意力融合时选择的权重，将其带入SMA的注意力矩阵计算公式，得到最终的注意力计算法则：</p>
+<script type="math/tex; mode=display">
+A^r(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^r(\boldsymbol{X}^r)+\alpha^d{\odot}f^d(\boldsymbol{X}^d))
+\\
+A^d(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^d(\boldsymbol{X}^d)+\alpha^r{\odot}f^r(\boldsymbol{X}^r))</script><p>${\odot}$代表通道间的点乘操作，这个模型称为$S^2MA$</p>
+<h2 id="4-RGD-D显著性检测网络"><a href="#4-RGD-D显著性检测网络" class="headerlink" title="4 RGD-D显著性检测网络"></a>4 RGD-D显著性检测网络</h2><p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/2.png" alt=""></p>
+<p>本文的网络架构采用的是Unet的架构，首先提取RGB图与Deep图各自的特征，再经过一个Dense ASPP模块，分别提取到512个通道的张量，送入本文所提出的$S^2MA$模块获取注意力特征，之后经过一个Unet网络，得到最终的显著性结果。</p>
+<h2 id="5-实验"><a href="#5-实验" class="headerlink" title="5 实验"></a>5 实验</h2><p>本文使用了七个RGB-D的数据集进行模型能力的评估，分别是：</p>
+<ol>
+<li><strong>NJUD</strong>：拥有1985张从互联网上搜集到的、从3D电影图片和立体照片中获取的图片；</li>
+<li><strong>NLPR和RGBD135</strong>：分别包含1000和135张由微软Kinect采集到的图片；</li>
+<li><strong>LFSD</strong>：包含100张由Lytro光场相机捕获的图片；</li>
+<li><strong>STERE</strong>：包含1000对从互联网上下载的双目图像；</li>
+<li><strong>SSD</strong>：包含八十张立体电影帧；</li>
+<li><strong>DUT-RGBD</strong>：包含1200张Lytro2相机捕获的图片。</li>
+</ol>
+<p>本文使用了四个评价指标评估模型的性能，分别是：</p>
+<ol>
+<li><strong>maxF</strong>：最大F测量，评价二值化显著性图的精度和召回率，是精度和召回率的加权平均；</li>
+<li><strong>$S_m$</strong>：结构度量，评价显著性图与ground truth之间区域感知和目标感知的结构相似性；</li>
+<li><strong>$E_{\xi}$</strong>：测量显著性图的全局统计信息与局部像素匹配信息；</li>
+<li><strong>MAE</strong>：平均绝对误差，测量显著性图与ground truth之间每个像素差值绝对值得平均水平。</li>
+</ol>
+<h3 id="5-1-消融实验"><a href="#5-1-消融实验" class="headerlink" title="5.1 消融实验"></a>5.1 消融实验</h3><p>设置了本文不同网络组成结构的组合下模型的表现结果，如下图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/3.png" alt="3"></p>
+<p>蓝色表示最佳水平，可以发现，本文方法比NL和SMA都要更好一些。</p>
+<p>作者还可视化了他们在红色查询点下，RGB自注意、Depth自注意与他们的方法获得的自-互注意图的注意力图。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/4.png" alt="4"></p>
+<h3 id="5-2-显著性模型有效性评估"><a href="#5-2-显著性模型有效性评估" class="headerlink" title="5.2 显著性模型有效性评估"></a>5.2 显著性模型有效性评估</h3><p>作者比较了他们的方法与其他先进方法（前三种是传统模型方法，后八种是深度学习模型方法）之间的显著性检测水平，红色是最好的表现，蓝色是第二好的表现。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/5.png" alt="5"></p>
+<p>此外，作者同时进行了定性评价，可视化了不同方法的显著性检测结果。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/image-20200924235304545.png" alt=""></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/19/%E3%80%8AMoco%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" rel="next" title="Moco：无监督视觉表征学习的动量对比">
+                <i class="fa fa-chevron-left"></i> Moco：无监督视觉表征学习的动量对比
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/19/Say%20As%20You%20Wish%20Fine-grained%20Control%20of%20Image%20Caption%20Generation%20with%20Abstract%20Scene%20Graphs/" rel="prev" title="SimCLR：《Say As You Wish》阅读笔记">
+                SimCLR：《Say As You Wish》阅读笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#%E6%98%BE%E8%91%97%E6%80%A7%E6%A3%80%E6%B5%8B%E7%9A%84%E5%AD%A6%E4%B9%A0%E9%80%89%E6%8B%A9%E6%80%A7%E8%87%AA%E7%9B%B8%E4%BA%92%E6%B3%A8%E6%84%8F-CVPR2020"><span class="nav-number">1.</span> <span class="nav-text">显著性检测的学习选择性自相互注意 CVPR2020</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Motivation"><span class="nav-number">1.1.</span> <span class="nav-text">1 Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Contribution"><span class="nav-number">1.2.</span> <span class="nav-text">2 Contribution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Approach"><span class="nav-number">1.3.</span> <span class="nav-text">3 Approach</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-Non-Local%E6%A8%A1%E5%9D%97"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 Non Local模块</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E8%87%AA-%E4%BA%92%E6%B3%A8%E6%84%8F%E5%8A%9B"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 自-互注意力</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E9%80%89%E6%8B%A9%E6%80%A7%E8%87%AA-%E4%BA%92%E6%B3%A8%E6%84%8F%E5%8A%9B"><span class="nav-number">1.3.3.</span> <span class="nav-text">3.3 选择性自-互注意力</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-RGD-D%E6%98%BE%E8%91%97%E6%80%A7%E6%A3%80%E6%B5%8B%E7%BD%91%E7%BB%9C"><span class="nav-number">1.4.</span> <span class="nav-text">4 RGD-D显著性检测网络</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.5.</span> <span class="nav-text">5 实验</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.5.1.</span> <span class="nav-text">5.1 消融实验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E6%98%BE%E8%91%97%E6%80%A7%E6%A8%A1%E5%9E%8B%E6%9C%89%E6%95%88%E6%80%A7%E8%AF%84%E4%BC%B0"><span class="nav-number">1.5.2.</span> <span class="nav-text">5.2 显著性模型有效性评估</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">微澜</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

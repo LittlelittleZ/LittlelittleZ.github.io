@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Say As You Wish: Fine-grained Control of Image Caption Generation with Abstract Scene Graphs题目：如你所愿:用抽象场景图精细控制图像标题生成。 来源：CVPR2020 本文提出了一种基于抽象场景图的图像字幕模型。 1 Motivation1) 图像字幕模型结合了多种计算机视觉技术，具有广泛的应用前景，但存在">
+<meta property="og:type" content="article">
+<meta property="og:title" content="SimCLR：《Say As You Wish》阅读笔记">
+<meta property="og:url" content="http://example.com/2021/01/19/Say%20As%20You%20Wish%20Fine-grained%20Control%20of%20Image%20Caption%20Generation%20with%20Abstract%20Scene%20Graphs/index.html">
+<meta property="og:site_name" content="缓缓行舟">
+<meta property="og:description" content="Say As You Wish: Fine-grained Control of Image Caption Generation with Abstract Scene Graphs题目：如你所愿:用抽象场景图精细控制图像标题生成。 来源：CVPR2020 本文提出了一种基于抽象场景图的图像字幕模型。 1 Motivation1) 图像字幕模型结合了多种计算机视觉技术，具有广泛的应用前景，但存在">
+<meta property="og:locale">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.1.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.2.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.3.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.4.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.5.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.6.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.7.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.8.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.9.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.10.png">
+<meta property="article:published_time" content="2021-01-19T13:31:13.138Z">
+<meta property="article:modified_time" content="2021-01-19T13:32:39.365Z">
+<meta property="article:author" content="微澜">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/01/19/Say As You Wish Fine-grained Control of Image Caption Generation with Abstract Scene Graphs/"/>
+
+
+
+
+
+  <title>SimCLR：《Say As You Wish》阅读笔记 | 缓缓行舟</title>
+  
+
+
+
+
+
+
+
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">缓缓行舟</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">给行船途中的所感所获一个容身之处</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Say%20As%20You%20Wish%20Fine-grained%20Control%20of%20Image%20Caption%20Generation%20with%20Abstract%20Scene%20Graphs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">SimCLR：《Say As You Wish》阅读笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T21:31:13+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Say-As-You-Wish-Fine-grained-Control-of-Image-Caption-Generation-with-Abstract-Scene-Graphs"><a href="#Say-As-You-Wish-Fine-grained-Control-of-Image-Caption-Generation-with-Abstract-Scene-Graphs" class="headerlink" title="Say As You Wish: Fine-grained Control of Image Caption Generation with Abstract Scene Graphs"></a>Say As You Wish: Fine-grained Control of Image Caption Generation with Abstract Scene Graphs</h1><p>题目：如你所愿:用抽象场景图精细控制图像标题生成。</p>
+<p>来源：CVPR2020</p>
+<p>本文提出了一种基于抽象场景图的图像字幕模型。</p>
+<h2 id="1-Motivation"><a href="#1-Motivation" class="headerlink" title="1 Motivation"></a>1 Motivation</h2><p>1) 图像字幕模型结合了多种计算机视觉技术，具有广泛的应用前景，但存在图像细节描述不足等问题。</p>
+<p>2) 按图像内容进行拼接式描述的图像字幕模型极大地阻碍了字幕的多样性，无法表达对图像的完整理解。</p>
+<h2 id="2-Contirbution"><a href="#2-Contirbution" class="headerlink" title="2 Contirbution"></a>2 Contirbution</h2><p>1) 第一个提出用抽象场景图对图像标题生成进行细粒度控制</p>
+<p>2) 提出的ASG2Caption模型用于自动识别抽象的图形节点，生成具有预期内容和顺序的字幕。</p>
+<p>3) 实现了最先进的可控性给定指定ASGs在两个数据集。</p>
+<h2 id="3-Approach"><a href="#3-Approach" class="headerlink" title="3 Approach"></a>3 Approach</h2><h3 id="3-1-抽象场景图"><a href="#3-1-抽象场景图" class="headerlink" title="3.1 抽象场景图"></a>3.1 抽象场景图</h3><p>本文首先提出一种抽象场景图（Abstract Scene Graph），用来表达图像内部对象属性及对象之间的关联性，如下图所示，对于图像$\mathcal{I}$，其ASG定义为$\mathcal{G}=(\mathcal{V}, \mathcal{E})$，其中的$\mathcal{V}$和$\mathcal{E}$分别表示ASG的节点和边。如下图所示，节点根据意图角色分为三种类型，即对象节点$o$，属性节点$a$和关系节点$r$。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.1.png" alt=""></p>
+<p>ASG的构造规则如下：</p>
+<p>首先用户添加其感兴趣的对象节点$o_i$，$o_i$以图像$\mathcal{I}$为基础，并且带有在图像中的边界框，以表示目标在图像中的位置；</p>
+<p>如果用户想了解关于$o_i$的更多信息，可以在图中给$o_i$添加多个属性节点$a_i$，并分配有向边，用一个额外变量$|l_i|$表示对象$o_i$的属性节点个数；</p>
+<p>如果用户想描述两个对象节点$o_i$和$o_j$之间的关系，添加关系节点$r_{i,j}$，并分配从$o_i→r_{i,j}$以及$r_{i,j}→o_j$的有向边。</p>
+<p>由此，用户即可方便地构造以细粒度方法描述用户对图像$\mathcal{I}$进行描述的ASG模型。</p>
+<p>构造抽象场景图的过程也可以通过简单的分类神经网络与对象建议网络自动生成。</p>
+<h3 id="3-2-ASG2Caption模型"><a href="#3-2-ASG2Caption模型" class="headerlink" title="3.2 ASG2Caption模型"></a>3.2 ASG2Caption模型</h3><p>这一部分阐述了作者通过使用给定图像$\mathcal{I}$和其ASG训练图像字幕模型的过程。本质上来说ASG2Caption模型是一个编码-解码网络，整个网络框架如下所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.2.png" alt=""></p>
+<h4 id="3-2-1-角色感知图编码器"><a href="#3-2-1-角色感知图编码器" class="headerlink" title="3.2.1 角色感知图编码器"></a>3.2.1 角色感知图编码器</h4><p>该编码器将ASG中基于给定图像$\mathcal{I}$的节点编码成一系列的节点嵌入$\mathcal{X}=\left\{x_{1}, \cdots, x_{|\mathcal{V}|}\right\}$，每一个$x_{i}$不仅需要反映节点对应的视觉信息，还应该表达出节点的意图，因为对于对象节点和其对应的属性节点，其对应于图像中的区域可能是相同的。因此本文提了一个角色感知图编码器，包括一个角色感知节点嵌入模块（Role-aware Node Embedding.），以区分节点意图，还包括一个多关系图卷积神经网络（Multi-relational Graph Convolutional Network.），用来进行上下文编码。</p>
+<h5 id="3-2-1-1-角色感知节点嵌入模块"><a href="#3-2-1-1-角色感知节点嵌入模块" class="headerlink" title="3.2.1.1 角色感知节点嵌入模块"></a>3.2.1.1 角色感知节点嵌入模块</h5><p>对于来自图$\mathcal{G}$中的第$i$个节点，首先将其初始化为对应的图像特征$v_i$，具体来说，目标节点$o_i$的特征提取自其在图像中对应的边界框；属性标节点$a_i$的特征提取自与其对应目标节相同的边界框区域；关系节点$r_i$的特征提取自与其关联的两个目标节点的联合边界框。</p>
+<p>由于只有视觉特征还无法对节点意向进行描述，在前面提取出图像特征$v_i$的基础上，还进一步对每个节点进行角色嵌入增强，最终得到角色感知节点嵌入的表达形式：</p>
+<script type="math/tex; mode=display">
+x_{i}^{(0)}=\left\{\begin{array}{cl}
+v_{i} \odot W_{r}[0], & \text { if } i \in o； \\
+v_{i} \odot\left(W_{r}[1]+\operatorname{pos}[i]\right), & \text { if } i \in a； \\
+v_{i} \odot W_{r}[2], & \text { if } i \in r.
+\end{array}\right.</script><p>上式中，$W_{r} \in \mathbb{R}^{3 \times d}$表示角色嵌入的可学习矩阵，$d$代表特征维度，其每一行分别对应不同的节点。在属性节点嵌入过程中，还额外增加了一个$\operatorname{pos}[i]$区分连接同一对象的不同属性。</p>
+<h5 id="3-2-1-1-多关系图卷积网络"><a href="#3-2-1-1-多关系图卷积网络" class="headerlink" title="3.2.1.1 多关系图卷积网络"></a>3.2.1.1 多关系图卷积网络</h5><p>虽然在本文的ASG中，节点之间的关系是单向的，但实际上节点之间会互相影响，而且由于节点类型不同，从一种类型节点传递信息到另一类型节点的方式与其逆过程不同。因此，作者对之前提出的ASG进行了拓展，得到用于上下文编码的多关系图$\mathcal{G}_{m}=(\mathcal{V}, \mathcal{E},\mathcal{R})$：</p>
+<p>具体地说，$\mathcal{R}$包含了六种边来捕捉相邻节点之间的相互关系，分别是从对象到属性、对象到关系、对象到对象以及这三种关系的逆方向。</p>
+<p>在明确了节点之间的关系之后，使用MR-GCN网络对进行角色感知嵌入之后的特征继续进行编码，采用如下方式：</p>
+<script type="math/tex; mode=display">
+x_{i}^{(l+1)}=\sigma\left(W_{0}^{(l)} x_{i}^{(l)}+\sum_{\tilde{r} \in \mathcal{R} } \sum_{j \in \mathcal{N}_{i}^{r} } \frac{1}{\left|\mathcal{N}_{i}^{\tilde{r}}\right|} W_{\tilde{r} }^{(l)} x_{j}^{(l)}\right)</script><p>上式中，$x_{i}^{(l+1)}$表示节点$i$的特征经过第$l+1$层之后的上下文编码嵌入结果，直观地解释就是在上一层的基础上，额外添加了与该节点临近所有节点在不同关系下的平均值之和，即引入了临近节点的信息，可以体现该节点与其他节点的关系。$\sigma$代表的是ReLU激活函数。</p>
+<p>取所有节点嵌入的平均值作为全局图嵌入：</p>
+<script type="math/tex; mode=display">
+\bar{g}=\frac{1}{|\mathcal{V}|} \sum_{i} x_{i}</script><p>将其与全局图像特征进行融合，得到全局编码特征$\bar{v}$。</p>
+<h4 id="3-2-2-图语言解码器"><a href="#3-2-2-图语言解码器" class="headerlink" title="3.2.2 图语言解码器"></a>3.2.2 图语言解码器</h4><p>图解码器的目的是将编码之后的ASG图解码为图像标题，本文采用的解码器包含两层LSTM结构，分别是注意力LSTM以及语言LSTM。</p>
+<p>注意力LSTM以全局编码特征$\bar{v}$、前一个词嵌入$w_{t-1}$、和上一层语言LSTM的输出$h_{t-1}^{l}$作为输入，输出注意力查询$h_{t}^{a}$：中括号中的参数拼接在一起作为输入。</p>
+<script type="math/tex; mode=display">
+h_{t}^{a}=\operatorname{LSTM}\left(\left[\bar{v} ; w_{t-1} ; h_{t-1}^{l}\right], h_{t-1}^{a} ; \theta^{a}\right)</script><p>对于语言LSTM，注意力查询$h_{t}^{a}$被用来提取第$t$步的节点嵌入$\mathcal{X}_t$的上下文向量$z_t$，之后将$z_t$和$h_{t}^{a}$作为输入，以此生成单词：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+h_{t}^{l} &=\operatorname{LSTM}\left(\left[z_{t} ; h_{t}^{a}\right], h_{t-1}^{l} ; \theta^{l}\right) \\
+p\left(y_{t} \mid y_{<t}\right) &=\operatorname{softmax}\left(W_{p} h_{t}^{l}+b_{p}\right)
+\end{aligned}</script><p>在生成单词$y_t$之后，本文还提出了一个图更新机制用来更新节点嵌入$\mathcal{X}_t \to \mathcal{X}_{t+1}$。</p>
+<h5 id="3-2-2-1-基于图的注意力机制"><a href="#3-2-2-1-基于图的注意力机制" class="headerlink" title="3.2.2.1 基于图的注意力机制"></a>3.2.2.1 基于图的注意力机制</h5><p>本文将图的注意力分成语义内容和图结构两方面，分别称为图内容注意（graph content attention）和图流注意（graph flow attention）。图注意的作用是用来计算上下文向量$z_t$。</p>
+<p><strong>1）图内容注意</strong></p>
+<p>图内容注意重点考虑节点嵌入$\mathcal{X}_t$和注意力查询$h_{t}^{a}$之间的语义相关性，通过如下方法计算语义得分：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\tilde{\alpha}_{t, i}^{c} &=w_{c}^{T} \tanh \left(W_{x c} x_{t, i}+W_{h c} h_{t}^{a}\right) \\
+\boldsymbol{\alpha_{t}^{c} }&=\operatorname{softmax}\left(\boldsymbol{\tilde{\alpha}_{t}^{c} }\right)
+\end{aligned}</script><p>这是一个比较基础的注意力网络，其中的$W$与$w$都是内容注意力网络的可学参数。</p>
+<p><strong>2）图流注意力</strong></p>
+<p>图流注意力的作用是捕获原始ASG中隐含的用户希望生成标题时的预期顺序（比如说如果当前参与的节点是关系节点，根据图的关系，下一个节点很可能是对象节点）。</p>
+<p>对于图流，与ASG相比分配了一个额外的开始符号，并且对象节点与属性节点之间是双向连接关系，实际的连接方向由文本流畅性决定，此外，当一个节点没有输出边时，将为该节点构建一个自环路边（走不通时返回），确保图上的注意力不消失。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.3.png" alt=""></p>
+<p>图流的转移有三种情况：</p>
+<p>1）原地不动：当使用多个词描述一个节点时。</p>
+<script type="math/tex; mode=display">
+\alpha_{t, 0}^{f}=\alpha_{t-1}</script><p>2）前进一步：从一个关系节点转移到其对象节点时。</p>
+<script type="math/tex; mode=display">
+\alpha_{t, 1}^{f}=\left(M_{f}\right) \alpha_{t-1}</script><p>3）前进两步：从关系节点转移到属性节点时。</p>
+<script type="math/tex; mode=display">
+\alpha_{t, 2}^{f}=\left(M_{f}\right)^{2} \alpha_{t-1}</script><p>$M_{f}$表示的是邻接矩阵，每一行表示对某一个节点的归一化转移情况。</p>
+<p>最终的流注意是一个由动态阀门控制的流量分数软插值：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+s_{t} &=\operatorname{softmax}\left(W_{s} \sigma\left(W_{s h} h_{t}^{a}+W_{s z} z_{t-1}\right)\right) \\
+\boldsymbol{\alpha_{t}^{f}} &=\sum_{k=0}^{2} s_{t, k} \boldsymbol{\alpha_{t, k}^{f} }
+\end{aligned}</script><p>完整图流注意形式流程图：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.4.png" style="zoom:80%;" /></p>
+<p>个人理解，图流注意的思想是，首先对图进行改造，构造一个新的图，包含了不同的流动关系，然后以注意力LSTM模型计算出的注意力查询$h_{t}^{a}$以及上一步的上下文向量$z_t$作为不同三种流的流量阀门，控制采纳的权重得分，最终确定最终的图流。即确定下一个进行文本解析的节点。</p>
+<p><strong>3）注意力融合</strong></p>
+<p>在计算出图内容注意力$\boldsymbol{\tilde{\alpha}_{t}^{c}}$与图流注意力$\boldsymbol{\alpha_{t}^{f}}$之后，使用一个可学网络学习注意力融合权重，进行注意力动态融合，具体表达式如下：</p>
+<script type="math/tex; mode=display">
+\begin{array}{l}
+\beta_{t}=\operatorname{sigmoid}\left(w_{g} \sigma\left(W_{g h} h_{t}^{a}+W_{g z} z_{t-1}\right)\right) \\
+\boldsymbol{\alpha_{t}}=\beta_{t} \boldsymbol{\tilde{\alpha}_{t}^{c} }+\left(1-\beta_{t}\right) \boldsymbol{\alpha_{t}^{f} }
+\end{array}</script><p><strong>4）上下文向量计算</strong></p>
+<p>在学习到注意力向量之后，求每一个节点与其对应注意力的加权和，即得到$t$步时最终的上下文向量</p>
+<script type="math/tex; mode=display">
+z_{t}=\sum_{i=1}^{|\mathcal{V}|} \alpha_{t, i} x_{t, i}</script><h5 id="3-2-2-2-图更新机制"><a href="#3-2-2-2-图更新机制" class="headerlink" title="3.2.2.2 图更新机制"></a>3.2.2.2 图更新机制</h5><p>在进行图像字幕工作时，每一个节点的访问强度被注意力矩阵保存下来，因此，参与更多的节点会被更新得更多，同时，有一些介词和助词虽然访问了图节点，但是并不代表节点的含义，这种情况下不应该对节点进行更新。本文提出了一种视觉哨兵门对注意力强度进行修正：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{u}_{\boldsymbol{t}}=\operatorname{sigmoid}\left(f_{v s}\left(h_{t}^{l} ; \theta_{v s}\right)\right) \boldsymbol{\alpha}_{\boldsymbol{t} }</script><p>上式代表了一个使用sigmoid激活的全连接层网络，用来输出一个标量，指示参与被访问的节点是否由被生成的文本所表示。</p>
+<p>更新机制来源于NTM方法，每个节点特征的更新分为两个部分：1）擦除；2）添加。</p>
+<p><strong>1）擦除</strong></p>
+<p>首先根据每个节点在$t$步时的更新强度$u_{t,i}$进行擦除操作，具体来说，还是使用了一个全连接层网络计算擦除强度：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+e_{t, i} &=\operatorname{sigmoid}\left(f_{\text {ers}}\left(\left[h_{t}^{l} ; x_{t, i}\right] ; \theta_{e r s}\right)\right) \\
+\hat{x}_{t+1, i} &=x_{t, i}\left(1-u_{t, i} e_{t, i}\right)
+\end{aligned}</script><p>之后，根据擦除强度对节点的特征进行擦除操作。</p>
+<p><strong>2）添加</strong></p>
+<p>对于重要节点，需要把被擦除的部分进行返还，这部分同样训练了一个全连接层网络计算动态添加强度：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+a_{t, i} &=\sigma\left(f_{a d d}\left(\left[h_{t}^{l} ; x_{t, i}\right] ; \theta_{a d d}\right)\right) \\
+x_{t+1, i} &=\hat{x}_{t+1, i}+u_{t, i} a_{t, i}
+\end{aligned}</script><p>再根据添加强度进行添加操作。</p>
+<h4 id="3-2-3-损失函数"><a href="#3-2-3-损失函数" class="headerlink" title="3.2.3 损失函数"></a>3.2.3 损失函数</h4><p>网络的损失函数是图像字幕翻译时每一步的翻译准确概率的对数和，是一个比较经典的LSTM模型的训练损失。</p>
+<script type="math/tex; mode=display">
+L=-\log \sum_{t=1}^{T} p\left(y_{t} \mid y_{<t}, \mathcal{G}, \mathcal{I}\right)</script><h2 id="4-Experiment"><a href="#4-Experiment" class="headerlink" title="4 Experiment"></a>4 Experiment</h2><p>本文实验数据库使用的是图像字幕中常用的<strong>VisuakGenome</strong> 和<strong>MSCOCO</strong>，自动构建出三元数据（image $\mathcal{I}$，ASG $\mathcal{G}$，caption $\mathcal{y}$）。三元数据的构建使用的是其他论文的方法。</p>
+<p>本文对模型质量的评价从<strong>可控性</strong>和<strong>多样性</strong>两方面进行评估。</p>
+<p>对于可控性的评估，使用与ground truth图像标题对其的ASG作为控制信号，具体的指标包括BLEU，METEOR，ROUGE，CIDEr，SPICE。评价思想是如果语义识别正确，句子结构应该与ASG比较符合，得分较高。</p>
+<p>对于多样性的评估，首先采样相同数量的标题，之后通过两个指标评估采样出来的标题的相似性。</p>
+<p>其一是DIV-n：评估长度为n个字节的词段在整个标题中出现的频率；其二是SelfCIDEr，派生自CIDEr的一种评测方法。</p>
+<p>具体实验时，使用在VisualGennome上预训练的Faster-RCNN提取ASG的节点特征，使用在ImageNet上预训练的ResNet152提取全局图像表征。</p>
+<h3 id="4-1-可控性评估"><a href="#4-1-可控性评估" class="headerlink" title="4.1 可控性评估"></a>4.1 可控性评估</h3><p>评估了他们的模型与一些其他方法在可控性指标上的表现：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.5.png" alt=""></p>
+<p>具体图像字幕的可视化：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.6.png" style="zoom:80%;" /></p>
+<h3 id="4-2-不同组件效果的消融研究"><a href="#4-2-不同组件效果的消融研究" class="headerlink" title="4.2 不同组件效果的消融研究"></a>4.2 不同组件效果的消融研究</h3><p>对不同模块的添加对模型表现进行了评估：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.7.png" alt=""></p>
+<p>第一二行是两个baseline，对三四行的评估发现添加图上下文编码能够提升模型表现，五六行比较了图流结果与图更新机制之间的表现差异，七八行评估了在本文提出的模型基础上，添加集束搜索（beam search，一种对贪心算法的改进）之后，模型表现达到了最优。</p>
+<h3 id="4-3-不同关心角度对字幕生成的影响"><a href="#4-3-不同关心角度对字幕生成的影响" class="headerlink" title="4.3 不同关心角度对字幕生成的影响"></a>4.3 不同关心角度对字幕生成的影响</h3><p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.8.png" alt=""></p>
+<p>根据不同关心角度构建的不同ASG，可能会输出完全不同的图像字幕结果，同时，具有大致相同结构的ASG会生成相似的标题，但是存在不同描述。证明模型细粒度级别上的敏感性。</p>
+<h3 id="4-4-多样性评估"><a href="#4-4-多样性评估" class="headerlink" title="4.4 多样性评估"></a>4.4 多样性评估</h3><p>在两个数据集上与不同模型进行对比，评价多样性水平：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.9.png" style="zoom:80%;" /></p>
+<p>使用不同ASG，生成了很不同的文本描述：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.10.png" alt=""></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/19/Learning%20Selective%20Self-Mutual%20Attention%20for%20RGB-D/" rel="next" title="《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D>阅读笔记">
+                <i class="fa fa-chevron-left"></i> 《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D>阅读笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Say-As-You-Wish-Fine-grained-Control-of-Image-Caption-Generation-with-Abstract-Scene-Graphs"><span class="nav-number">1.</span> <span class="nav-text">Say As You Wish: Fine-grained Control of Image Caption Generation with Abstract Scene Graphs</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Motivation"><span class="nav-number">1.1.</span> <span class="nav-text">1 Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Contirbution"><span class="nav-number">1.2.</span> <span class="nav-text">2 Contirbution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Approach"><span class="nav-number">1.3.</span> <span class="nav-text">3 Approach</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 抽象场景图</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-ASG2Caption%E6%A8%A1%E5%9E%8B"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 ASG2Caption模型</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-1-%E8%A7%92%E8%89%B2%E6%84%9F%E7%9F%A5%E5%9B%BE%E7%BC%96%E7%A0%81%E5%99%A8"><span class="nav-number">1.3.2.1.</span> <span class="nav-text">3.2.1 角色感知图编码器</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-1-1-%E8%A7%92%E8%89%B2%E6%84%9F%E7%9F%A5%E8%8A%82%E7%82%B9%E5%B5%8C%E5%85%A5%E6%A8%A1%E5%9D%97"><span class="nav-number">1.3.2.1.1.</span> <span class="nav-text">3.2.1.1 角色感知节点嵌入模块</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-1-1-%E5%A4%9A%E5%85%B3%E7%B3%BB%E5%9B%BE%E5%8D%B7%E7%A7%AF%E7%BD%91%E7%BB%9C"><span class="nav-number">1.3.2.1.2.</span> <span class="nav-text">3.2.1.1 多关系图卷积网络</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-2-%E5%9B%BE%E8%AF%AD%E8%A8%80%E8%A7%A3%E7%A0%81%E5%99%A8"><span class="nav-number">1.3.2.2.</span> <span class="nav-text">3.2.2 图语言解码器</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-2-1-%E5%9F%BA%E4%BA%8E%E5%9B%BE%E7%9A%84%E6%B3%A8%E6%84%8F%E5%8A%9B%E6%9C%BA%E5%88%B6"><span class="nav-number">1.3.2.2.1.</span> <span class="nav-text">3.2.2.1 基于图的注意力机制</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#3-2-2-2-%E5%9B%BE%E6%9B%B4%E6%96%B0%E6%9C%BA%E5%88%B6"><span class="nav-number">1.3.2.2.2.</span> <span class="nav-text">3.2.2.2 图更新机制</span></a></li></ol></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-2-3-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">1.3.2.3.</span> <span class="nav-text">3.2.3 损失函数</span></a></li></ol></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Experiment"><span class="nav-number">1.4.</span> <span class="nav-text">4 Experiment</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%8F%AF%E6%8E%A7%E6%80%A7%E8%AF%84%E4%BC%B0"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 可控性评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E4%B8%8D%E5%90%8C%E7%BB%84%E4%BB%B6%E6%95%88%E6%9E%9C%E7%9A%84%E6%B6%88%E8%9E%8D%E7%A0%94%E7%A9%B6"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 不同组件效果的消融研究</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E4%B8%8D%E5%90%8C%E5%85%B3%E5%BF%83%E8%A7%92%E5%BA%A6%E5%AF%B9%E5%AD%97%E5%B9%95%E7%94%9F%E6%88%90%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.4.3.</span> <span class="nav-text">4.3 不同关心角度对字幕生成的影响</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E5%A4%9A%E6%A0%B7%E6%80%A7%E8%AF%84%E4%BC%B0"><span class="nav-number">1.4.4.</span> <span class="nav-text">4.4 多样性评估</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">微澜</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>

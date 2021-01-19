@@ -235,6 +235,419 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Say%20As%20You%20Wish%20Fine-grained%20Control%20of%20Image%20Caption%20Generation%20with%20Abstract%20Scene%20Graphs/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/19/Say%20As%20You%20Wish%20Fine-grained%20Control%20of%20Image%20Caption%20Generation%20with%20Abstract%20Scene%20Graphs/" itemprop="url">SimCLR：《Say As You Wish》阅读笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T21:31:13+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Say-As-You-Wish-Fine-grained-Control-of-Image-Caption-Generation-with-Abstract-Scene-Graphs"><a href="#Say-As-You-Wish-Fine-grained-Control-of-Image-Caption-Generation-with-Abstract-Scene-Graphs" class="headerlink" title="Say As You Wish: Fine-grained Control of Image Caption Generation with Abstract Scene Graphs"></a>Say As You Wish: Fine-grained Control of Image Caption Generation with Abstract Scene Graphs</h1><p>题目：如你所愿:用抽象场景图精细控制图像标题生成。</p>
+<p>来源：CVPR2020</p>
+<p>本文提出了一种基于抽象场景图的图像字幕模型。</p>
+<h2 id="1-Motivation"><a href="#1-Motivation" class="headerlink" title="1 Motivation"></a>1 Motivation</h2><p>1) 图像字幕模型结合了多种计算机视觉技术，具有广泛的应用前景，但存在图像细节描述不足等问题。</p>
+<p>2) 按图像内容进行拼接式描述的图像字幕模型极大地阻碍了字幕的多样性，无法表达对图像的完整理解。</p>
+<h2 id="2-Contirbution"><a href="#2-Contirbution" class="headerlink" title="2 Contirbution"></a>2 Contirbution</h2><p>1) 第一个提出用抽象场景图对图像标题生成进行细粒度控制</p>
+<p>2) 提出的ASG2Caption模型用于自动识别抽象的图形节点，生成具有预期内容和顺序的字幕。</p>
+<p>3) 实现了最先进的可控性给定指定ASGs在两个数据集。</p>
+<h2 id="3-Approach"><a href="#3-Approach" class="headerlink" title="3 Approach"></a>3 Approach</h2><h3 id="3-1-抽象场景图"><a href="#3-1-抽象场景图" class="headerlink" title="3.1 抽象场景图"></a>3.1 抽象场景图</h3><p>本文首先提出一种抽象场景图（Abstract Scene Graph），用来表达图像内部对象属性及对象之间的关联性，如下图所示，对于图像$\mathcal{I}$，其ASG定义为$\mathcal{G}=(\mathcal{V}, \mathcal{E})$，其中的$\mathcal{V}$和$\mathcal{E}$分别表示ASG的节点和边。如下图所示，节点根据意图角色分为三种类型，即对象节点$o$，属性节点$a$和关系节点$r$。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.1.png" alt=""></p>
+<p>ASG的构造规则如下：</p>
+<p>首先用户添加其感兴趣的对象节点$o_i$，$o_i$以图像$\mathcal{I}$为基础，并且带有在图像中的边界框，以表示目标在图像中的位置；</p>
+<p>如果用户想了解关于$o_i$的更多信息，可以在图中给$o_i$添加多个属性节点$a_i$，并分配有向边，用一个额外变量$|l_i|$表示对象$o_i$的属性节点个数；</p>
+<p>如果用户想描述两个对象节点$o_i$和$o_j$之间的关系，添加关系节点$r_{i,j}$，并分配从$o_i→r_{i,j}$以及$r_{i,j}→o_j$的有向边。</p>
+<p>由此，用户即可方便地构造以细粒度方法描述用户对图像$\mathcal{I}$进行描述的ASG模型。</p>
+<p>构造抽象场景图的过程也可以通过简单的分类神经网络与对象建议网络自动生成。</p>
+<h3 id="3-2-ASG2Caption模型"><a href="#3-2-ASG2Caption模型" class="headerlink" title="3.2 ASG2Caption模型"></a>3.2 ASG2Caption模型</h3><p>这一部分阐述了作者通过使用给定图像$\mathcal{I}$和其ASG训练图像字幕模型的过程。本质上来说ASG2Caption模型是一个编码-解码网络，整个网络框架如下所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.2.png" alt=""></p>
+<h4 id="3-2-1-角色感知图编码器"><a href="#3-2-1-角色感知图编码器" class="headerlink" title="3.2.1 角色感知图编码器"></a>3.2.1 角色感知图编码器</h4><p>该编码器将ASG中基于给定图像$\mathcal{I}$的节点编码成一系列的节点嵌入$\mathcal{X}=\left\{x_{1}, \cdots, x_{|\mathcal{V}|}\right\}$，每一个$x_{i}$不仅需要反映节点对应的视觉信息，还应该表达出节点的意图，因为对于对象节点和其对应的属性节点，其对应于图像中的区域可能是相同的。因此本文提了一个角色感知图编码器，包括一个角色感知节点嵌入模块（Role-aware Node Embedding.），以区分节点意图，还包括一个多关系图卷积神经网络（Multi-relational Graph Convolutional Network.），用来进行上下文编码。</p>
+<h5 id="3-2-1-1-角色感知节点嵌入模块"><a href="#3-2-1-1-角色感知节点嵌入模块" class="headerlink" title="3.2.1.1 角色感知节点嵌入模块"></a>3.2.1.1 角色感知节点嵌入模块</h5><p>对于来自图$\mathcal{G}$中的第$i$个节点，首先将其初始化为对应的图像特征$v_i$，具体来说，目标节点$o_i$的特征提取自其在图像中对应的边界框；属性标节点$a_i$的特征提取自与其对应目标节相同的边界框区域；关系节点$r_i$的特征提取自与其关联的两个目标节点的联合边界框。</p>
+<p>由于只有视觉特征还无法对节点意向进行描述，在前面提取出图像特征$v_i$的基础上，还进一步对每个节点进行角色嵌入增强，最终得到角色感知节点嵌入的表达形式：</p>
+<script type="math/tex; mode=display">
+x_{i}^{(0)}=\left\{\begin{array}{cl}
+v_{i} \odot W_{r}[0], & \text { if } i \in o； \\
+v_{i} \odot\left(W_{r}[1]+\operatorname{pos}[i]\right), & \text { if } i \in a； \\
+v_{i} \odot W_{r}[2], & \text { if } i \in r.
+\end{array}\right.</script><p>上式中，$W_{r} \in \mathbb{R}^{3 \times d}$表示角色嵌入的可学习矩阵，$d$代表特征维度，其每一行分别对应不同的节点。在属性节点嵌入过程中，还额外增加了一个$\operatorname{pos}[i]$区分连接同一对象的不同属性。</p>
+<h5 id="3-2-1-1-多关系图卷积网络"><a href="#3-2-1-1-多关系图卷积网络" class="headerlink" title="3.2.1.1 多关系图卷积网络"></a>3.2.1.1 多关系图卷积网络</h5><p>虽然在本文的ASG中，节点之间的关系是单向的，但实际上节点之间会互相影响，而且由于节点类型不同，从一种类型节点传递信息到另一类型节点的方式与其逆过程不同。因此，作者对之前提出的ASG进行了拓展，得到用于上下文编码的多关系图$\mathcal{G}_{m}=(\mathcal{V}, \mathcal{E},\mathcal{R})$：</p>
+<p>具体地说，$\mathcal{R}$包含了六种边来捕捉相邻节点之间的相互关系，分别是从对象到属性、对象到关系、对象到对象以及这三种关系的逆方向。</p>
+<p>在明确了节点之间的关系之后，使用MR-GCN网络对进行角色感知嵌入之后的特征继续进行编码，采用如下方式：</p>
+<script type="math/tex; mode=display">
+x_{i}^{(l+1)}=\sigma\left(W_{0}^{(l)} x_{i}^{(l)}+\sum_{\tilde{r} \in \mathcal{R} } \sum_{j \in \mathcal{N}_{i}^{r} } \frac{1}{\left|\mathcal{N}_{i}^{\tilde{r}}\right|} W_{\tilde{r} }^{(l)} x_{j}^{(l)}\right)</script><p>上式中，$x_{i}^{(l+1)}$表示节点$i$的特征经过第$l+1$层之后的上下文编码嵌入结果，直观地解释就是在上一层的基础上，额外添加了与该节点临近所有节点在不同关系下的平均值之和，即引入了临近节点的信息，可以体现该节点与其他节点的关系。$\sigma$代表的是ReLU激活函数。</p>
+<p>取所有节点嵌入的平均值作为全局图嵌入：</p>
+<script type="math/tex; mode=display">
+\bar{g}=\frac{1}{|\mathcal{V}|} \sum_{i} x_{i}</script><p>将其与全局图像特征进行融合，得到全局编码特征$\bar{v}$。</p>
+<h4 id="3-2-2-图语言解码器"><a href="#3-2-2-图语言解码器" class="headerlink" title="3.2.2 图语言解码器"></a>3.2.2 图语言解码器</h4><p>图解码器的目的是将编码之后的ASG图解码为图像标题，本文采用的解码器包含两层LSTM结构，分别是注意力LSTM以及语言LSTM。</p>
+<p>注意力LSTM以全局编码特征$\bar{v}$、前一个词嵌入$w_{t-1}$、和上一层语言LSTM的输出$h_{t-1}^{l}$作为输入，输出注意力查询$h_{t}^{a}$：中括号中的参数拼接在一起作为输入。</p>
+<script type="math/tex; mode=display">
+h_{t}^{a}=\operatorname{LSTM}\left(\left[\bar{v} ; w_{t-1} ; h_{t-1}^{l}\right], h_{t-1}^{a} ; \theta^{a}\right)</script><p>对于语言LSTM，注意力查询$h_{t}^{a}$被用来提取第$t$步的节点嵌入$\mathcal{X}_t$的上下文向量$z_t$，之后将$z_t$和$h_{t}^{a}$作为输入，以此生成单词：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+h_{t}^{l} &=\operatorname{LSTM}\left(\left[z_{t} ; h_{t}^{a}\right], h_{t-1}^{l} ; \theta^{l}\right) \\
+p\left(y_{t} \mid y_{<t}\right) &=\operatorname{softmax}\left(W_{p} h_{t}^{l}+b_{p}\right)
+\end{aligned}</script><p>在生成单词$y_t$之后，本文还提出了一个图更新机制用来更新节点嵌入$\mathcal{X}_t \to \mathcal{X}_{t+1}$。</p>
+<h5 id="3-2-2-1-基于图的注意力机制"><a href="#3-2-2-1-基于图的注意力机制" class="headerlink" title="3.2.2.1 基于图的注意力机制"></a>3.2.2.1 基于图的注意力机制</h5><p>本文将图的注意力分成语义内容和图结构两方面，分别称为图内容注意（graph content attention）和图流注意（graph flow attention）。图注意的作用是用来计算上下文向量$z_t$。</p>
+<p><strong>1）图内容注意</strong></p>
+<p>图内容注意重点考虑节点嵌入$\mathcal{X}_t$和注意力查询$h_{t}^{a}$之间的语义相关性，通过如下方法计算语义得分：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\tilde{\alpha}_{t, i}^{c} &=w_{c}^{T} \tanh \left(W_{x c} x_{t, i}+W_{h c} h_{t}^{a}\right) \\
+\boldsymbol{\alpha_{t}^{c} }&=\operatorname{softmax}\left(\boldsymbol{\tilde{\alpha}_{t}^{c} }\right)
+\end{aligned}</script><p>这是一个比较基础的注意力网络，其中的$W$与$w$都是内容注意力网络的可学参数。</p>
+<p><strong>2）图流注意力</strong></p>
+<p>图流注意力的作用是捕获原始ASG中隐含的用户希望生成标题时的预期顺序（比如说如果当前参与的节点是关系节点，根据图的关系，下一个节点很可能是对象节点）。</p>
+<p>对于图流，与ASG相比分配了一个额外的开始符号，并且对象节点与属性节点之间是双向连接关系，实际的连接方向由文本流畅性决定，此外，当一个节点没有输出边时，将为该节点构建一个自环路边（走不通时返回），确保图上的注意力不消失。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.3.png" alt=""></p>
+<p>图流的转移有三种情况：</p>
+<p>1）原地不动：当使用多个词描述一个节点时。</p>
+<script type="math/tex; mode=display">
+\alpha_{t, 0}^{f}=\alpha_{t-1}</script><p>2）前进一步：从一个关系节点转移到其对象节点时。</p>
+<script type="math/tex; mode=display">
+\alpha_{t, 1}^{f}=\left(M_{f}\right) \alpha_{t-1}</script><p>3）前进两步：从关系节点转移到属性节点时。</p>
+<script type="math/tex; mode=display">
+\alpha_{t, 2}^{f}=\left(M_{f}\right)^{2} \alpha_{t-1}</script><p>$M_{f}$表示的是邻接矩阵，每一行表示对某一个节点的归一化转移情况。</p>
+<p>最终的流注意是一个由动态阀门控制的流量分数软插值：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+s_{t} &=\operatorname{softmax}\left(W_{s} \sigma\left(W_{s h} h_{t}^{a}+W_{s z} z_{t-1}\right)\right) \\
+\boldsymbol{\alpha_{t}^{f}} &=\sum_{k=0}^{2} s_{t, k} \boldsymbol{\alpha_{t, k}^{f} }
+\end{aligned}</script><p>完整图流注意形式流程图：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.4.png" style="zoom:80%;" /></p>
+<p>个人理解，图流注意的思想是，首先对图进行改造，构造一个新的图，包含了不同的流动关系，然后以注意力LSTM模型计算出的注意力查询$h_{t}^{a}$以及上一步的上下文向量$z_t$作为不同三种流的流量阀门，控制采纳的权重得分，最终确定最终的图流。即确定下一个进行文本解析的节点。</p>
+<p><strong>3）注意力融合</strong></p>
+<p>在计算出图内容注意力$\boldsymbol{\tilde{\alpha}_{t}^{c}}$与图流注意力$\boldsymbol{\alpha_{t}^{f}}$之后，使用一个可学网络学习注意力融合权重，进行注意力动态融合，具体表达式如下：</p>
+<script type="math/tex; mode=display">
+\begin{array}{l}
+\beta_{t}=\operatorname{sigmoid}\left(w_{g} \sigma\left(W_{g h} h_{t}^{a}+W_{g z} z_{t-1}\right)\right) \\
+\boldsymbol{\alpha_{t}}=\beta_{t} \boldsymbol{\tilde{\alpha}_{t}^{c} }+\left(1-\beta_{t}\right) \boldsymbol{\alpha_{t}^{f} }
+\end{array}</script><p><strong>4）上下文向量计算</strong></p>
+<p>在学习到注意力向量之后，求每一个节点与其对应注意力的加权和，即得到$t$步时最终的上下文向量</p>
+<script type="math/tex; mode=display">
+z_{t}=\sum_{i=1}^{|\mathcal{V}|} \alpha_{t, i} x_{t, i}</script><h5 id="3-2-2-2-图更新机制"><a href="#3-2-2-2-图更新机制" class="headerlink" title="3.2.2.2 图更新机制"></a>3.2.2.2 图更新机制</h5><p>在进行图像字幕工作时，每一个节点的访问强度被注意力矩阵保存下来，因此，参与更多的节点会被更新得更多，同时，有一些介词和助词虽然访问了图节点，但是并不代表节点的含义，这种情况下不应该对节点进行更新。本文提出了一种视觉哨兵门对注意力强度进行修正：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{u}_{\boldsymbol{t}}=\operatorname{sigmoid}\left(f_{v s}\left(h_{t}^{l} ; \theta_{v s}\right)\right) \boldsymbol{\alpha}_{\boldsymbol{t} }</script><p>上式代表了一个使用sigmoid激活的全连接层网络，用来输出一个标量，指示参与被访问的节点是否由被生成的文本所表示。</p>
+<p>更新机制来源于NTM方法，每个节点特征的更新分为两个部分：1）擦除；2）添加。</p>
+<p><strong>1）擦除</strong></p>
+<p>首先根据每个节点在$t$步时的更新强度$u_{t,i}$进行擦除操作，具体来说，还是使用了一个全连接层网络计算擦除强度：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+e_{t, i} &=\operatorname{sigmoid}\left(f_{\text {ers}}\left(\left[h_{t}^{l} ; x_{t, i}\right] ; \theta_{e r s}\right)\right) \\
+\hat{x}_{t+1, i} &=x_{t, i}\left(1-u_{t, i} e_{t, i}\right)
+\end{aligned}</script><p>之后，根据擦除强度对节点的特征进行擦除操作。</p>
+<p><strong>2）添加</strong></p>
+<p>对于重要节点，需要把被擦除的部分进行返还，这部分同样训练了一个全连接层网络计算动态添加强度：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+a_{t, i} &=\sigma\left(f_{a d d}\left(\left[h_{t}^{l} ; x_{t, i}\right] ; \theta_{a d d}\right)\right) \\
+x_{t+1, i} &=\hat{x}_{t+1, i}+u_{t, i} a_{t, i}
+\end{aligned}</script><p>再根据添加强度进行添加操作。</p>
+<h4 id="3-2-3-损失函数"><a href="#3-2-3-损失函数" class="headerlink" title="3.2.3 损失函数"></a>3.2.3 损失函数</h4><p>网络的损失函数是图像字幕翻译时每一步的翻译准确概率的对数和，是一个比较经典的LSTM模型的训练损失。</p>
+<script type="math/tex; mode=display">
+L=-\log \sum_{t=1}^{T} p\left(y_{t} \mid y_{<t}, \mathcal{G}, \mathcal{I}\right)</script><h2 id="4-Experiment"><a href="#4-Experiment" class="headerlink" title="4 Experiment"></a>4 Experiment</h2><p>本文实验数据库使用的是图像字幕中常用的<strong>VisuakGenome</strong> 和<strong>MSCOCO</strong>，自动构建出三元数据（image $\mathcal{I}$，ASG $\mathcal{G}$，caption $\mathcal{y}$）。三元数据的构建使用的是其他论文的方法。</p>
+<p>本文对模型质量的评价从<strong>可控性</strong>和<strong>多样性</strong>两方面进行评估。</p>
+<p>对于可控性的评估，使用与ground truth图像标题对其的ASG作为控制信号，具体的指标包括BLEU，METEOR，ROUGE，CIDEr，SPICE。评价思想是如果语义识别正确，句子结构应该与ASG比较符合，得分较高。</p>
+<p>对于多样性的评估，首先采样相同数量的标题，之后通过两个指标评估采样出来的标题的相似性。</p>
+<p>其一是DIV-n：评估长度为n个字节的词段在整个标题中出现的频率；其二是SelfCIDEr，派生自CIDEr的一种评测方法。</p>
+<p>具体实验时，使用在VisualGennome上预训练的Faster-RCNN提取ASG的节点特征，使用在ImageNet上预训练的ResNet152提取全局图像表征。</p>
+<h3 id="4-1-可控性评估"><a href="#4-1-可控性评估" class="headerlink" title="4.1 可控性评估"></a>4.1 可控性评估</h3><p>评估了他们的模型与一些其他方法在可控性指标上的表现：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.5.png" alt=""></p>
+<p>具体图像字幕的可视化：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.6.png" style="zoom:80%;" /></p>
+<h3 id="4-2-不同组件效果的消融研究"><a href="#4-2-不同组件效果的消融研究" class="headerlink" title="4.2 不同组件效果的消融研究"></a>4.2 不同组件效果的消融研究</h3><p>对不同模块的添加对模型表现进行了评估：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.7.png" alt=""></p>
+<p>第一二行是两个baseline，对三四行的评估发现添加图上下文编码能够提升模型表现，五六行比较了图流结果与图更新机制之间的表现差异，七八行评估了在本文提出的模型基础上，添加集束搜索（beam search，一种对贪心算法的改进）之后，模型表现达到了最优。</p>
+<h3 id="4-3-不同关心角度对字幕生成的影响"><a href="#4-3-不同关心角度对字幕生成的影响" class="headerlink" title="4.3 不同关心角度对字幕生成的影响"></a>4.3 不同关心角度对字幕生成的影响</h3><p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.8.png" alt=""></p>
+<p>根据不同关心角度构建的不同ASG，可能会输出完全不同的图像字幕结果，同时，具有大致相同结构的ASG会生成相似的标题，但是存在不同描述。证明模型细粒度级别上的敏感性。</p>
+<h3 id="4-4-多样性评估"><a href="#4-4-多样性评估" class="headerlink" title="4.4 多样性评估"></a>4.4 多样性评估</h3><p>在两个数据集上与不同模型进行对比，评价多样性水平：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.9.png" style="zoom:80%;" /></p>
+<p>使用不同ASG，生成了很不同的文本描述：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E6%8A%BD%E8%B1%A1%E5%9C%BA%E6%99%AF%E5%9B%BE%E7%9B%B8%E5%85%B3/Say%20As%20You%20Wish/3.10.png" alt=""></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Learning%20Selective%20Self-Mutual%20Attention%20for%20RGB-D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/19/Learning%20Selective%20Self-Mutual%20Attention%20for%20RGB-D/" itemprop="url">《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D>阅读笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T21:31:13+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="显著性检测的学习选择性自相互注意-CVPR2020"><a href="#显著性检测的学习选择性自相互注意-CVPR2020" class="headerlink" title="显著性检测的学习选择性自相互注意 CVPR2020"></a>显著性检测的学习选择性自相互注意 CVPR2020</h1><h2 id="1-Motivation"><a href="#1-Motivation" class="headerlink" title="1 Motivation"></a>1 Motivation</h2><p>1) 相比于传统的RGB显著性检测方法，包含深度信息的RGB-D检测可以更好地识别出图像的阳性区域。</p>
+<p>2) 以往的RGB-D检测使用的融合策略（如早期融合、结果融合）作用有限。</p>
+<h2 id="2-Contribution"><a href="#2-Contribution" class="headerlink" title="2 Contribution"></a>2 Contribution</h2><p>1) 基于Non-Local，提出一种新的中间融合策略，通过融合深度注意，准确定位出对象的主体。</p>
+<p>2) 将注意力机制应用于双流CNN模型，并引入新的残差融合模块，提高了显著性检测的性能，优于所有现存方法。</p>
+<h2 id="3-Approach"><a href="#3-Approach" class="headerlink" title="3 Approach"></a>3 Approach</h2><p>本文使用的注意力模型基于Non Local，是在此基础上进行的改进。整个模型框架如下图右侧图像所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/1.png" alt="1">如上图所示，不包含深度信息的RGB方法的检测结果含有很严重的假阳性高亮区域。</p>
+<h3 id="3-1-Non-Local模块"><a href="#3-1-Non-Local模块" class="headerlink" title="3.1 Non Local模块"></a>3.1 Non Local模块</h3><p>​        首先简要介绍一种non local模块，如上图左侧部分所示，Non Local模型首先将输入的feature map$\boldsymbol{X}$用三个不同权值的1×1卷积层嵌入到三个通道数均为$C_1$的特征空间中。</p>
+<p>​        之后，计算经过$W_{\theta}$与$W_{\phi}$嵌入之后的$\boldsymbol{X}$两个不同视图每个像素点之间的相关性。此处的计算方法是简单的矩阵乘法：</p>
+<script type="math/tex; mode=display">
+f(\boldsymbol{X})=\theta(\boldsymbol{X}) \phi(\boldsymbol{X})^{\top}</script><p>​        然后，使用softmax对$f(\boldsymbol{X})$进行行归一化处理得到$\boldsymbol{X}$的注意力矩阵，第$i$一行即表示像素点$i$与其他点之间的注意力权重情况。</p>
+<script type="math/tex; mode=display">
+A(\boldsymbol{X})=softmax(f(\boldsymbol{X}))</script><p>​        再将得到的注意力矩阵与$\boldsymbol{X}$的另一个嵌入视图$g(\boldsymbol{X})$相乘，即得到最终的包含注意力信息的特征$\boldsymbol{Y}$</p>
+<script type="math/tex; mode=display">
+\boldsymbol{Y}=A(\boldsymbol{X})g(\boldsymbol{X})</script><p>​        最后，引入一个残差模块，得到最终的输出特征：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{Z}=\boldsymbol{Y}W_\boldsymbol{Z}+\boldsymbol{X}</script><h3 id="3-2-自-互注意力"><a href="#3-2-自-互注意力" class="headerlink" title="3.2 自-互注意力"></a>3.2 自-互注意力</h3><p>Non Local模块本质上是对自身特征的双线性投影，属于self-attention的范畴，在此基础上，作者提出引入相互注意力，以提升RGB-D任务定义多模态特征的显著性检测水平，因此提出了如上图所示右侧的网络架构，称为SMA（Self-Mutual Attention）。SMA的思路如下：</p>
+<p>对于给定的图像在RGB模态与D模态下的feature map$\boldsymbol{X}^r$与$\boldsymbol{X}^d$，基于NL模型，计算二者各自的相关性矩阵$f(\boldsymbol{X}^r)$与$f(\boldsymbol{X}^d)$，将二者通过简单相加的方法进行融合，得到一个新的注意力矩阵：</p>
+<script type="math/tex; mode=display">
+A^f(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^r(\boldsymbol{X}^r)+f^d(\boldsymbol{X}^d))</script><p>使用融合注意力矩阵代替各自的注意力矩阵计算$\boldsymbol{X}^r$与$\boldsymbol{X}^d$各自的注意力特征，得到最终的输出特征$\boldsymbol{Z}^r$与$\boldsymbol{Z}^d$。</p>
+<p>作者认为融合注意力矩阵相比于各自独立的注意力矩阵包含了RGD与D模态下的注意力信息，使得学习到的注意力更加准确，并且在实验中切实提高了模型表现。</p>
+<h3 id="3-3-选择性自-互注意力"><a href="#3-3-选择性自-互注意力" class="headerlink" title="3.3 选择性自-互注意力"></a>3.3 选择性自-互注意力</h3><p>SMA模型对于RGB模态与Deep模态之间的自注意力与相互注意力的选择是平等的，然而作者认为相互注意力并不总是在所有位置都可靠，可能会产生负面干扰。因此作者引入了一个选择机制，对相互注意力的引入程度进行了一定控制。</p>
+<p>具体来说，首先将RGB模态与D模态下的feature map$\boldsymbol{X}^r$与$\boldsymbol{X}^d$拼接成一个张量，维度是[H, W, 2C]，之后经过一个1×1的矩阵进行embedding处理之后，经过softmax处理得到选择注意力矩阵，维度是[H, W, 2]：</p>
+<script type="math/tex; mode=display">
+\alpha=softmax\left(\operatorname{Conv}\left(\left[\boldsymbol{X}^{r}, \boldsymbol{X}^{d}\right]\right)\right)</script><p>将$\alpha$进行拆分，得到模态RGD与D各自的$\alpha^r$与$\alpha^d$，维度是[H, W, 1]，代表每个模态在所有位置上对应的可靠性，即在进行注意力融合时选择的权重，将其带入SMA的注意力矩阵计算公式，得到最终的注意力计算法则：</p>
+<script type="math/tex; mode=display">
+A^r(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^r(\boldsymbol{X}^r)+\alpha^d{\odot}f^d(\boldsymbol{X}^d))
+\\
+A^d(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^d(\boldsymbol{X}^d)+\alpha^r{\odot}f^r(\boldsymbol{X}^r))</script><p>${\odot}$代表通道间的点乘操作，这个模型称为$S^2MA$</p>
+<h2 id="4-RGD-D显著性检测网络"><a href="#4-RGD-D显著性检测网络" class="headerlink" title="4 RGD-D显著性检测网络"></a>4 RGD-D显著性检测网络</h2><p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/2.png" alt=""></p>
+<p>本文的网络架构采用的是Unet的架构，首先提取RGB图与Deep图各自的特征，再经过一个Dense ASPP模块，分别提取到512个通道的张量，送入本文所提出的$S^2MA$模块获取注意力特征，之后经过一个Unet网络，得到最终的显著性结果。</p>
+<h2 id="5-实验"><a href="#5-实验" class="headerlink" title="5 实验"></a>5 实验</h2><p>本文使用了七个RGB-D的数据集进行模型能力的评估，分别是：</p>
+<ol>
+<li><strong>NJUD</strong>：拥有1985张从互联网上搜集到的、从3D电影图片和立体照片中获取的图片；</li>
+<li><strong>NLPR和RGBD135</strong>：分别包含1000和135张由微软Kinect采集到的图片；</li>
+<li><strong>LFSD</strong>：包含100张由Lytro光场相机捕获的图片；</li>
+<li><strong>STERE</strong>：包含1000对从互联网上下载的双目图像；</li>
+<li><strong>SSD</strong>：包含八十张立体电影帧；</li>
+<li><strong>DUT-RGBD</strong>：包含1200张Lytro2相机捕获的图片。</li>
+</ol>
+<p>本文使用了四个评价指标评估模型的性能，分别是：</p>
+<ol>
+<li><strong>maxF</strong>：最大F测量，评价二值化显著性图的精度和召回率，是精度和召回率的加权平均；</li>
+<li><strong>$S_m$</strong>：结构度量，评价显著性图与ground truth之间区域感知和目标感知的结构相似性；</li>
+<li><strong>$E_{\xi}$</strong>：测量显著性图的全局统计信息与局部像素匹配信息；</li>
+<li><strong>MAE</strong>：平均绝对误差，测量显著性图与ground truth之间每个像素差值绝对值得平均水平。</li>
+</ol>
+<h3 id="5-1-消融实验"><a href="#5-1-消融实验" class="headerlink" title="5.1 消融实验"></a>5.1 消融实验</h3><p>设置了本文不同网络组成结构的组合下模型的表现结果，如下图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/3.png" alt="3"></p>
+<p>蓝色表示最佳水平，可以发现，本文方法比NL和SMA都要更好一些。</p>
+<p>作者还可视化了他们在红色查询点下，RGB自注意、Depth自注意与他们的方法获得的自-互注意图的注意力图。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/4.png" alt="4"></p>
+<h3 id="5-2-显著性模型有效性评估"><a href="#5-2-显著性模型有效性评估" class="headerlink" title="5.2 显著性模型有效性评估"></a>5.2 显著性模型有效性评估</h3><p>作者比较了他们的方法与其他先进方法（前三种是传统模型方法，后八种是深度学习模型方法）之间的显著性检测水平，红色是最好的表现，蓝色是第二好的表现。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/5.png" alt="5"></p>
+<p>此外，作者同时进行了定性评价，可视化了不同方法的显著性检测结果。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Learning%20Selective%20Self-Mutual%20Attention/image-20200924235304545.png" alt=""></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/%E3%80%8AMoco%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1326,7 +1739,7 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">6</span>
+                  <span class="site-state-item-count">8</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
