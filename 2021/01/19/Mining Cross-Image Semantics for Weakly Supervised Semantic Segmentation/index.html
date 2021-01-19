@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation题目：挖掘用于弱监督语义分割模型的跨图像语义。 来源：CVPR2020 1 Motivation1) 基于深度学习的语义分割模型取得了很好的表现，但是依赖于大量精确标注数据的特性导致了高昂的训练成本。 2) 弱监督语义分割模型对标签数据的依赖性较低，但是容">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation》 阅读笔记">
+<meta property="og:url" content="http://example.com/2021/01/19/Mining%20Cross-Image%20Semantics%20for%20Weakly%20Supervised%20Semantic%20Segmentation/index.html">
+<meta property="og:site_name" content="缓缓行舟">
+<meta property="og:description" content="Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation题目：挖掘用于弱监督语义分割模型的跨图像语义。 来源：CVPR2020 1 Motivation1) 基于深度学习的语义分割模型取得了很好的表现，但是依赖于大量精确标注数据的特性导致了高昂的训练成本。 2) 弱监督语义分割模型对标签数据的依赖性较低，但是容">
+<meta property="og:locale">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.1.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.2.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.3.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.4.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.9.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.5.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.6.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.7.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.8.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.10.png">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.11.png">
+<meta property="article:published_time" content="2021-01-19T14:14:29.161Z">
+<meta property="article:modified_time" content="2021-01-19T14:15:58.551Z">
+<meta property="article:author" content="微澜">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.1.png">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/01/19/Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation/"/>
+
+
+
+
+
+  <title>《Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation》 阅读笔记 | 缓缓行舟</title>
+  
+
+
+
+
+
+
+
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">缓缓行舟</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">给行船途中的所感所获一个容身之处</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/Mining%20Cross-Image%20Semantics%20for%20Weakly%20Supervised%20Semantic%20Segmentation/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">《Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation》 阅读笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-19T22:14:29+08:00">
+                2021-01-19
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Mining-Cross-Image-Semantics-for-Weakly-Supervised-Semantic-Segmentation"><a href="#Mining-Cross-Image-Semantics-for-Weakly-Supervised-Semantic-Segmentation" class="headerlink" title="Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation"></a>Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation</h1><p>题目：挖掘用于弱监督语义分割模型的跨图像语义。</p>
+<p>来源：CVPR2020</p>
+<h2 id="1-Motivation"><a href="#1-Motivation" class="headerlink" title="1 Motivation"></a>1 Motivation</h2><p>1) 基于深度学习的语义分割模型取得了很好的表现，但是依赖于大量精确标注数据的特性导致了高昂的训练成本。</p>
+<p>2) 弱监督语义分割模型对标签数据的依赖性较低，但是容易忽略图像的总体信息而过度关注局部。</p>
+<p>3) 目前针对WSSS模型的改进方法通常只使用单一的图像信息挖掘对象模式，而忽略了图像间的语义相似性。</p>
+<h2 id="2-Contribution"><a href="#2-Contribution" class="headerlink" title="2 Contribution"></a>2 Contribution</h2><p>1) 构建了一个共注意力分类器将跨图像语义相关有应用于完全目标模式学习与目标位置推断。</p>
+<p>2) 共注意力分类器分别通过共注意力与对比注意力从跨图像语义的相似性和差异性中挖掘出完整的监督信息。</p>
+<p>3) 该方法可以通用于多种不同监督信息的WSSS模型。</p>
+<h2 id="3-Approach"><a href="#3-Approach" class="headerlink" title="3 Approach"></a>3 Approach</h2><p>本文的实验方法与传统的弱监督语义分割模型相同，先用带有图像级标签的数据训练一个分类网络，获得相应的目标局部映射，用这个映射作为伪ground truth，用来监督语义分割网络的训练。</p>
+<p>对于注意力的学习，主要分成了两个模块，其一是共注意力学习，用来驱动分类器从图像的共同关注要素中学习到公共语义，其二是一个相对独立的注意力学习，用来限制分类器关注其他非共同关注要素，以学习图像对各自内部的非共享语义信息。</p>
+<h3 id="3-1-共注意力分类网络"><a href="#3-1-共注意力分类网络" class="headerlink" title="3.1 共注意力分类网络"></a>3.1 共注意力分类网络</h3><p>co-attention classifier由三个模块组成，分别是传统的分类器网络，以及一个共注意力网络和一个对比共注意力网络，整个网络框架如下图所示。三个模块为串联排列，首先是利用传统分类器进行分类训练，之后用提取到的特征训练了一个共注意力模块，用提取到的共注意力特征训练分类器对共享语义信息的分类敏感性，在共注意特征的基础上，继续训练了一个对比共注意模块，以提升分类器对图像对中的互斥语义信息的敏感性。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.1.png" alt=""></p>
+<h4 id="3-1-1-分类器模块训练"><a href="#3-1-1-分类器模块训练" class="headerlink" title="3.1.1 分类器模块训练"></a>3.1.1 分类器模块训练</h4><p>本模型的重点在于跨图像训练，因此网络结构是一种类似孪生网络的架构，其输入以成对的形式作为输入并进行训练。</p>
+<p>首先，从图像训练集$\boldsymbol{I}=\{(\boldsymbol{I}_n,\boldsymbol{l}_n)\}_n$中采样图片对$\boldsymbol{I}_m$与$\boldsymbol{I}_n$，以及其各自的标签$\boldsymbol{l}_m$与$\boldsymbol{l}_n$，$\boldsymbol{l}_n\in{\{0,1\}^K}$是一个$K$维数据，代表图像中所具有的类别属性。之后将图像数据输入卷积神经网络中提取出各自的特征图$\boldsymbol{F}_m$与$\boldsymbol{F}_n$，$\boldsymbol{F}_{n} \in \mathbb{R}^{C \times H \times W}$。</p>
+<p>在提取到feature map以后，将其送入一个全卷积层$\varphi(·)$得到类感知激活映射$\boldsymbol{S}_m$与$\boldsymbol{S}_n$，$\boldsymbol{S}_{n} \in \mathbb{R}^{K \times H \times W}$。之后再经全局池化平均(GAP)处理，得到分类器计算出的$\boldsymbol{I}_m$与$\boldsymbol{I}_n$的类别得分$s_n，s_{m} \in \mathbb{R}^{K}$，计算图像对各自的类别得分与其真实标签$\boldsymbol{l}_m$与$\boldsymbol{l}_n$之间的交叉熵，作为分类器的损失函数：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\mathcal{L}_{\text {basic }}^{\operatorname{mn}}\left(\left(\boldsymbol{I}_{m}, \boldsymbol{I}_{n}\right),\left(\boldsymbol{l}_{m}, l_{n}\right)\right) &=\mathcal{L}_{\mathrm{CE} }\left(\boldsymbol{s}_{m}, l_{m}\right)+\mathcal{L}_{\mathrm{CE}}\left(\boldsymbol{s}_{n}, l_{n}\right) \\
+&=\mathcal{L}_{\mathrm{CE}}\left(\operatorname{GAP}\left(\varphi\left(\boldsymbol{F}_{m}\right)\right), \boldsymbol{l}_{m}\right)+\mathcal{L}_{\mathrm{CE} }\left(\operatorname{GAP}\left(\varphi\left(\boldsymbol{F}_{n}\right)\right), \boldsymbol{l}_{n}\right)
+\end{aligned}</script><h4 id="3-1-2-跨图像语义挖掘的co-attention"><a href="#3-1-2-跨图像语义挖掘的co-attention" class="headerlink" title="3.1.2 跨图像语义挖掘的co-attention"></a>3.1.2 跨图像语义挖掘的co-attention</h4><p>这部分阐述了共注意力机制的理论知识，首先，在分类器的基础上，根据学到的图像feature map，$\boldsymbol{F}_m$与$\boldsymbol{F}_n$，计算二者之间的亲和力矩阵以衡量相关性：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{P}=\boldsymbol{F}_{m}^{\top} \boldsymbol{W}_{\boldsymbol{P} } \boldsymbol{F}_{n} \in \mathbb{R}^{H W \times H W}</script><p>这里的$\boldsymbol{F}_m$与$\boldsymbol{F}_n$均被平铺成$C×HW$的尺寸，上式中的$\boldsymbol{W}_\boldsymbol{P}$是一个$C×C$的可学习矩阵，根据这个公式，亲和力矩阵$\boldsymbol{P}$中的每一个元素$p_{ij}$均代表了$\boldsymbol{F}_{m}$中第$i$个元素与$\boldsymbol{F}_{n}$中第$j$个元素之间的相似性。</p>
+<p>之后，分别按列和行对$\boldsymbol{P}$进行softmax操作，即可得到中$\boldsymbol{F}_{m}^{m \cap n}$与$\boldsymbol{F}_{n}^{m \cap n}$每个元素的归一化注意力图$\boldsymbol{A}_{m}$与$\boldsymbol{F}_{n}$对$\boldsymbol{F}_{m}$中每个元素的归一化注意力图$\boldsymbol{A}_{n}$。</p>
+<script type="math/tex; mode=display">
+\boldsymbol{A}_{m}=\operatorname{softmax}(\boldsymbol{P}) \in[0,1]^{H W \times H W}, \quad \boldsymbol{A}_{n}=\operatorname{softmax}\left(\boldsymbol{P}^{\top}\right) \in[0,1]^{H W \times H W}</script><p>接着便可以计算$\boldsymbol{F}_{n}(\boldsymbol{F}_{m})$对$\boldsymbol{F}_{m}(\boldsymbol{F}_{n})$的注意力总结：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{F}_{m}^{m \cap n}=\boldsymbol{F}_{n} \boldsymbol{A}_{n} \in \mathbb{R}^{C \times H \times W}, \quad \boldsymbol{F}_{n}^{m \cap n}=\boldsymbol{F}_{m} \boldsymbol{A}_{m} \in \mathbb{R}^{C \times H \times W}</script><p>将上式计算结果调整为$C×W×H$的尺寸，便得到了共注意力特征$\boldsymbol{F}_{m}^{m \cap n}$与$\boldsymbol{F}_{n}^{m \cap n}$。二者保留了来自对方的共同语义，并在自身的原始特征图中定位了共享语义对象。由此可以认为，在共注意图中，只对具有相同语义特征的区域有较为明显的激活反应，而对非共同特征则有较低的权值，以此帮助分类器准确定位出共享语义。</p>
+<p>将提取到的共注意力特征$\boldsymbol{F}_{m}^{m \cap n}$与$\boldsymbol{F}_{n}^{m \cap n}$代替原始feature map $\boldsymbol{F}_m$与$\boldsymbol{F}_n$，带入基础分类损失中，得到共注意力分类损失的计算公式：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\mathcal{L}_{\text {co-att } }^{m n}\left(\left(\boldsymbol{I}_{m}, \boldsymbol{I}_{n}\right),\left(\boldsymbol{l}_{m}, l_{n}\right)\right)=& \mathcal{L}_{\mathrm{CE} }\left(\boldsymbol{s}_{m}^{m \cap n}, \boldsymbol{l}_{m} \cap l_{n}\right)+\mathcal{L}_{\mathrm{CE} }\left(\boldsymbol{s}_{n}^{m \cap n}, l_{m} \cap l_{n}\right) \\
+=& \mathcal{L}_{\mathrm{CE} }\left(\operatorname{GAP}\left(\varphi\left(\boldsymbol{F}_{m}^{m \cap n}\right)\right), \boldsymbol{l}_{m} \cap \boldsymbol{l}_{n}\right)+\\
+& \mathcal{L}_{\mathrm{CE} }\left(\operatorname{GAP}\left(\varphi\left(\boldsymbol{F}_{n}^{m \cap n}\right)\right), \boldsymbol{l}_{m} \cap \boldsymbol{l}_{n}\right)
+\end{aligned}</script><p>上式旨在提升分类器对以共注意特征为输入的共享语义标签的分类结果的准确性，以使分类器更加集中于图片对的共享语义信息。</p>
+<h4 id="3-1-3-用于跨图像互斥语义挖掘的contrastive-co-attention"><a href="#3-1-3-用于跨图像互斥语义挖掘的contrastive-co-attention" class="headerlink" title="3.1.3 用于跨图像互斥语义挖掘的contrastive co-attention"></a>3.1.3 用于跨图像互斥语义挖掘的contrastive co-attention</h4><p>共注意的作用在于使分类器对图像对之间的共享语义信息更敏感，而对比共注意旨在与共注意形成互补，目的是加强分类器对图像对中独属于单一图像自身的独特语义信息的敏感性。</p>
+<p>根据论文的网络架构，可以发现对比共注意模型以提取到的共注意特征作为$\boldsymbol{F}_{m}^{m \cap n}$与$\boldsymbol{F}_{n}^{m \cap n}$输入，首先，对比共注意模块使用如下方法强化共注意特征中的共享语义信息（理论上，共注意特征中共享语义区域会有更大的值）：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{B}_{m}^{m \cap n}=\sigma\left(\boldsymbol{W}_{B} \boldsymbol{F}_{m}^{m \cap n}\right) \in[0,1]^{H \times W}, \quad \boldsymbol{B}_{n}^{m \cap n}=\sigma\left(\boldsymbol{W}_{B} \boldsymbol{F}_{n}^{m \cap n}\right) \in[0,1]^{H \times W}</script><p>上式中的$\boldsymbol{W}_{B}$是一个$1×1$的卷积层，$\sigma$代表sigmoid激活函数，因此，在$\boldsymbol{B}_{m}^{m \cap n}$与$\boldsymbol{B}_{n}^{m \cap n}$中，共享语义区域比非共享语义区域具有明显更大的值。用1减去以上的值，即得到对比共注意矩阵：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{A}_{m}^{m \backslash n}=\mathbf{1}-\boldsymbol{B}_{m}^{m \cap n} \in[0,1]^{H \times W}, \quad \boldsymbol{A}_{n}^{n \backslash m}=1-\boldsymbol{B}_{n}^{m \cap n} \in[0,1]^{H \times W}</script><p>结合整个过程，对比共注意特征相当于在强化了共注意特征之后将其围绕1取反，反向突出了除了共享语义区域之外的阴性区域，以此作为非共享语义要素的注意图。</p>
+<p>回顾共注意特征的计算过程，$\boldsymbol{F}_{m}^{m \cap n}$由$\boldsymbol{F}_{n}$与$\boldsymbol{A}_{n}$计算得到，相对来说，其内部对与来自$\boldsymbol{F}_{n}$中的语义信息注意力更高，因此，经过上述处理以后，$\boldsymbol{A}_{m}^{m \backslash n}$中的注意力信息更加集中于来自$\boldsymbol{F}_{m}$的互斥语义。</p>
+<p>在此基础上，计算对比共注意特征：</p>
+<script type="math/tex; mode=display">
+\boldsymbol{F}_{m}^{m \backslash n}=\boldsymbol{F}_{m} \otimes \boldsymbol{A}_{m}^{m \backslash n} \in \mathbb{R}^{C \times H \times W}, \quad \boldsymbol{F}_{n}^{n \backslash m}=\boldsymbol{F}_{n} \otimes \boldsymbol{A}_{n}^{n \backslash m} \in \mathbb{R}^{C \times H \times W}</script><p>“$\otimes$”表示元素间的点积操作，同样将其带入分类器损失，即可得到对比共注意力损失函数：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\mathcal{L}_{\overline{\mathrm{co}-\mathrm{att} } }^{m n}\left(\left(\boldsymbol{I}_{m}, \boldsymbol{I}_{n}\right),\left(\boldsymbol{l}_{m}, l_{n}\right)\right)=& \mathcal{L}_{\mathrm{CE} }\left(\boldsymbol{s}_{m}^{m \backslash n}, \boldsymbol{l}_{m} \backslash \boldsymbol{l}_{n}\right)+\mathcal{L}_{\mathrm{CE} }\left(\boldsymbol{s}_{n}^{n \backslash m}, \boldsymbol{l}_{n} \backslash \boldsymbol{l}_{m}\right) \\
+=& \mathcal{L}_{\mathrm{CE} }\left(\operatorname{GAP}\left(\varphi\left(\boldsymbol{F}_{m}^{m \backslash n}\right)\right), \boldsymbol{l}_{m} \backslash \boldsymbol{l}_{n}\right)+\\
+& \mathcal{L}_{\mathrm{CE} }\left(\operatorname{GAP}\left(\varphi\left(\boldsymbol{F}_{n}^{n \backslash m}\right), \boldsymbol{l}_{n} \backslash \boldsymbol{l}_{m}\right)\right.
+\end{aligned}</script><p>该损失计算的是每个对比共注意特征的分类得分与其自身包含的互斥语义类别标签之间的交叉熵，目的在于使分类器对与对比共注意特征，将其归类为对应的互斥语义类别之中。</p>
+<p>为什么要额外引入一个对比共注意呢？本质上，对比共注意是对共注意信息的互补，以便分类器可以很好地学习到图像中剩余的互斥语义信息，并且帮助分类器区分出共享语义与非共享语义。如下图，假如在共注意特征提取时，非共享语义“奶牛”被错误识别为共享语义“人类”，在对比共注意特征中，该部分将会被剔除出非共享语义注意的范围，而剩余的注意力信息不足以帮助分类器寻找到“奶牛”，从而能促使分类器对共享语义与非共享语义的区分度。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.2.png" alt=""></p>
+<h3 id="3-2-网络架构细节"><a href="#3-2-网络架构细节" class="headerlink" title="3.2 网络架构细节"></a>3.2 网络架构细节</h3><p>实际进行实验时，损失函数为上述三者的和，每个损失函数系数均为1，并且保证每个图像对至少有一个共同的语义标签。</p>
+<script type="math/tex; mode=display">
+\mathcal{L}=\sum_{m,n}{\mathcal{L}_{\text {basic } }^{\operatorname{mn} }+\mathcal{L}_{\text {co-att } }^{m n}+\mathcal{L}_{\overline{\mathrm{co}-\mathrm{att}}  }^{m n} }</script><p>本文采用了单轮前馈预测和额外参考信息的多轮共注意预测，如下图所示，第一种是一般的训练方法。对于多轮预测，具体来说就是在计算共注意分类损失时，使用了数据集中的额外相关图像（后续有做消融实验对比）。具体来说，对于含有标签$k$的某一图像$\boldsymbol{l}_{n}$，计算其与其他若干张含有标签$k$的图像关于$k$的共注意特征，并计算出每一对之间的共注意分类得分，用这个分类得分的均值作为$\boldsymbol{l}_{n}$对于标签$k$的的共注意分类结果。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.3.png" alt=""></p>
+<p>在获取到高质量的定位图之后，以此作为伪ground truth进行语义分割网络的训练，本文选择的分类网络是<strong>基于ImageNet预训练的VGG-16</strong>，语义分割网络是<strong>基于ResNet101的DeepLab-LargeFOV架构</strong>。</p>
+<h2 id="4-Experiment"><a href="#4-Experiment" class="headerlink" title="4 Experiment"></a>4 Experiment</h2><h3 id="4-1-只在PASCAL-VOC-Data上学习WSSS"><a href="#4-1-只在PASCAL-VOC-Data上学习WSSS" class="headerlink" title="4.1 只在PASCAL VOC Data上学习WSSS"></a>4.1 只在PASCAL VOC Data上学习WSSS</h3><p>本实验只使用仅含图像级标签监督信息的PASCAL VOC 2012中的图像进行训练，共包含20个类，一共10582张图片用于训练，val集包含1449张图像，test集包含1456张图像。对于val与test，使用语义分割常用的标准交并比（IoU）作为评价指标，即（目标区域与预测区域的交集）/（目标区域与预测区域的并集），具体结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.4.png" style="zoom:80%;" /></p>
+<p>作者还可视化了其语义分割结果，与PSA，OAA+进行对比，图像如下（从左到右依次是PSA,OAA+和本文方法）：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.9.png" alt=""></p>
+<h3 id="4-2-在PASCAL-VOC-Data和额外简单单标签数据上学习WSSS"><a href="#4-2-在PASCAL-VOC-Data和额外简单单标签数据上学习WSSS" class="headerlink" title="4.2 在PASCAL VOC Data和额外简单单标签数据上学习WSSS"></a>4.2 在PASCAL VOC Data和额外简单单标签数据上学习WSSS</h3><p>本实验在PASCAL VOC 2012与额外的简单单标签数据上训练模型，其中额外的单标签数据来自ImageNet CLS-LOC和Caltech-256数据库的子集，共包含20个类别20057张额外简单单标签图像数据。IoU结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.5.png" style="zoom:80%;" /></p>
+<h3 id="4-3-在PASCAL-VOC-Data和从网络获取的数据上学习WSSS"><a href="#4-3-在PASCAL-VOC-Data和从网络获取的数据上学习WSSS" class="headerlink" title="4.3 在PASCAL VOC Data和从网络获取的数据上学习WSSS"></a>4.3 在PASCAL VOC Data和从网络获取的数据上学习WSSS</h3><p>本实验在PASCAL VOC 2012与额外的根据标签名称从必应搜索获得的图像数据上进行训练，共包含20个类别以及总共76683张图像。IoU结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.6.png" style="zoom:80%;" /></p>
+<h3 id="4-4-训练出的WSSS在-mathrm-LID-20-挑战上的表现"><a href="#4-4-训练出的WSSS在-mathrm-LID-20-挑战上的表现" class="headerlink" title="4.4 训练出的WSSS在$\mathrm{LID}_{20}$挑战上的表现"></a>4.4 训练出的WSSS在$\mathrm{LID}_{20}$挑战上的表现</h3><p>数据集基于ImageNet，包含共有200个图像级标签的349319张图像，本挑战采用的分类器网络基于ResNet-38，并对网络实验参数进行了一些调整。使用均交并比（mIoU）,即计算所有类别的交并比取均值作为评价方案，结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.7.png" style="zoom:80%;" /></p>
+<p>注意，在$LID_{19}$中，还可以使用额外的显著性属性标记信息，本文在不使用该信息的情况下表现也优于19年的冠军队伍。</p>
+<h3 id="4-5-消融实验"><a href="#4-5-消融实验" class="headerlink" title="4.5 消融实验"></a>4.5 消融实验</h3><h4 id="4-5-1-推理策略"><a href="#4-5-1-推理策略" class="headerlink" title="4.5.1 推理策略"></a>4.5.1 推理策略</h4><p>本实验比较了单轮推理策略，多轮推理策略使用不同方法的IoU得分，结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.8.png" style="zoom:80%;" /></p>
+<p>结果显示多轮策略比单论策略的表现有所提升，而当包含了其他相关图像时，对比共注意的加入无法提升定位图推断的性能，作者认为是因为对比共注意特征来自图像自身，而定位图推断更多依赖于上下文信息。</p>
+<h4 id="4-5-2-损失函数"><a href="#4-5-2-损失函数" class="headerlink" title="4.5.2 损失函数"></a>4.5.2 损失函数</h4><p>本实验评估了多种损失函数组合方式对mIoU得分的影响，如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.10.png" style="zoom:80%;" /></p>
+<p>可以看出，加入共注意损失时，性能提升了3.8%，再加入对比共注意损失时性能又提升了0.7%。</p>
+<h4 id="4-5-3-额外图像"><a href="#4-5-3-额外图像" class="headerlink" title="4.5.3 额外图像"></a>4.5.3 额外图像</h4><p>作者比较了输入0-5张额外相关图像进行训练时模型的IoU表现，发现添加三张时模型效果最好，随着数量继续增大，噪声的影响盖过了辅助信息的作用，导致性能下降。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Attention%E7%9B%B8%E5%85%B3/Mining%20Cross-Image%20Semantics/2.11.png" style="zoom:80%;" /></p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/19/Say%20As%20You%20Wish%20Fine-grained%20Control%20of%20Image%20Caption%20Generation%20with%20Abstract%20Scene%20Graphs/" rel="next" title="《Say As You Wish》阅读笔记">
+                <i class="fa fa-chevron-left"></i> 《Say As You Wish》阅读笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/19/High-Frequency_Component_Helps_Explain_the_Generalization_of_Convolutional_Neural_Networks/" rel="prev" title="《High-Frequency Component...》 阅读笔记">
+                《High-Frequency Component...》 阅读笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Mining-Cross-Image-Semantics-for-Weakly-Supervised-Semantic-Segmentation"><span class="nav-number">1.</span> <span class="nav-text">Mining Cross-Image Semantics for Weakly Supervised Semantic Segmentation</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-Motivation"><span class="nav-number">1.1.</span> <span class="nav-text">1 Motivation</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-Contribution"><span class="nav-number">1.2.</span> <span class="nav-text">2 Contribution</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-Approach"><span class="nav-number">1.3.</span> <span class="nav-text">3 Approach</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%85%B1%E6%B3%A8%E6%84%8F%E5%8A%9B%E5%88%86%E7%B1%BB%E7%BD%91%E7%BB%9C"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 共注意力分类网络</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-1-%E5%88%86%E7%B1%BB%E5%99%A8%E6%A8%A1%E5%9D%97%E8%AE%AD%E7%BB%83"><span class="nav-number">1.3.1.1.</span> <span class="nav-text">3.1.1 分类器模块训练</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-2-%E8%B7%A8%E5%9B%BE%E5%83%8F%E8%AF%AD%E4%B9%89%E6%8C%96%E6%8E%98%E7%9A%84co-attention"><span class="nav-number">1.3.1.2.</span> <span class="nav-text">3.1.2 跨图像语义挖掘的co-attention</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#3-1-3-%E7%94%A8%E4%BA%8E%E8%B7%A8%E5%9B%BE%E5%83%8F%E4%BA%92%E6%96%A5%E8%AF%AD%E4%B9%89%E6%8C%96%E6%8E%98%E7%9A%84contrastive-co-attention"><span class="nav-number">1.3.1.3.</span> <span class="nav-text">3.1.3 用于跨图像互斥语义挖掘的contrastive co-attention</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84%E7%BB%86%E8%8A%82"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 网络架构细节</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Experiment"><span class="nav-number">1.4.</span> <span class="nav-text">4 Experiment</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E5%8F%AA%E5%9C%A8PASCAL-VOC-Data%E4%B8%8A%E5%AD%A6%E4%B9%A0WSSS"><span class="nav-number">1.4.1.</span> <span class="nav-text">4.1 只在PASCAL VOC Data上学习WSSS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E5%9C%A8PASCAL-VOC-Data%E5%92%8C%E9%A2%9D%E5%A4%96%E7%AE%80%E5%8D%95%E5%8D%95%E6%A0%87%E7%AD%BE%E6%95%B0%E6%8D%AE%E4%B8%8A%E5%AD%A6%E4%B9%A0WSSS"><span class="nav-number">1.4.2.</span> <span class="nav-text">4.2 在PASCAL VOC Data和额外简单单标签数据上学习WSSS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-3-%E5%9C%A8PASCAL-VOC-Data%E5%92%8C%E4%BB%8E%E7%BD%91%E7%BB%9C%E8%8E%B7%E5%8F%96%E7%9A%84%E6%95%B0%E6%8D%AE%E4%B8%8A%E5%AD%A6%E4%B9%A0WSSS"><span class="nav-number">1.4.3.</span> <span class="nav-text">4.3 在PASCAL VOC Data和从网络获取的数据上学习WSSS</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-4-%E8%AE%AD%E7%BB%83%E5%87%BA%E7%9A%84WSSS%E5%9C%A8-mathrm-LID-20-%E6%8C%91%E6%88%98%E4%B8%8A%E7%9A%84%E8%A1%A8%E7%8E%B0"><span class="nav-number">1.4.4.</span> <span class="nav-text">4.4 训练出的WSSS在$\mathrm{LID}_{20}$挑战上的表现</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-5-%E6%B6%88%E8%9E%8D%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.4.5.</span> <span class="nav-text">4.5 消融实验</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#4-5-1-%E6%8E%A8%E7%90%86%E7%AD%96%E7%95%A5"><span class="nav-number">1.4.5.1.</span> <span class="nav-text">4.5.1 推理策略</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-5-2-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0"><span class="nav-number">1.4.5.2.</span> <span class="nav-text">4.5.2 损失函数</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#4-5-3-%E9%A2%9D%E5%A4%96%E5%9B%BE%E5%83%8F"><span class="nav-number">1.4.5.3.</span> <span class="nav-text">4.5.3 额外图像</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">微澜</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
