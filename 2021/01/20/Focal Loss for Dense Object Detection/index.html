@@ -98,7 +98,7 @@
 <meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.9.jpg">
 <meta property="og:image" content="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.10.jpg">
 <meta property="article:published_time" content="2021-01-20T07:10:23.773Z">
-<meta property="article:modified_time" content="2021-01-20T07:26:43.517Z">
+<meta property="article:modified_time" content="2021-01-20T07:29:44.283Z">
 <meta property="article:author" content="微澜">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/aHR0cHM6Ly9hZTAxLmFsaWNkbi5jb20va2YvVVRCOFhaTXF2cFBKWEtKa1NhaFZxNnh5ekZYYTAuanBn">
@@ -380,7 +380,7 @@
 <p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.7.jpg" alt=""></p>
 <p>该网络由一个用来提取特征的Feature Pyramid Network(FPN, 金字塔型主网络和一个分类子网络以及一个边框子网络组成。</p>
 <p>FPN主网络基于ResNet构造，目的是增强CNN的泛化能力，同时可以提取不同尺度的特征。</p>
-<p>分类子网络由四个相同的$3<em>3$卷积层组成，输出一个$W {</em>} H {<em>} 256$的特征，再经过一个$3\</em>3$卷积层输出$W {<em>} H {</em>} KA$的特征，K是目标类别数量，A是网络设计的锚点（候选区域）的数量，最后进行二值分类。</p>
+<p>分类子网络由四个相同的 $3<em>3$ 卷积层组成，输出一个 $W {</em>} H {<em>} 256$ 的特征，再经过一个 $3</em>3$ 卷积层输出 $W <em> H </em> KA$ 的特征，K是目标类别数量，A是网络设计的锚点（候选区域）的数量，最后进行二值分类。</p>
 <p>边框子网络和分类子网络结构基本相同，在最后一层的输出以及后续处理上有所差异，其作用是优化输出边框和groundtruch之间的偏移量。</p>
 <p>由于网络不是本文的主要内容，因此不做过多介绍。</p>
 <h2 id="6-Experiment"><a href="#6-Experiment" class="headerlink" title="6. Experiment"></a>6. Experiment</h2><p>本实验基于COCO目标检测数据集。</p>
@@ -388,9 +388,9 @@
 <p>$AP$:IoU从0.5：0.05：0.95时的平均精度</p>
 <p>$AP_{50}$：代表IoU为0.5时的测量值</p>
 <p>$AP_{75}$：代表IoU为0.75时的测量值</p>
-<p>$AP_{S}$：小目标（尺寸小于$32{*}32$）的AP值</p>
-<p>$AP_{M}$：中等目标（尺寸为$32 {<em>} 32$到$96 {</em>} 96$之间）的AP值</p>
-<p>$AP_{L}$：大目标（尺寸大于$96 {*} 96$）的AP值</p>
+<p>$AP_{S}$：小目标（尺寸小于 $32*32$ ）的AP值</p>
+<p>$AP_{M}$：中等目标（尺寸为 $32 <em> 32$ 到 $96 </em> 96$ 之间）的AP值</p>
+<p>$AP_{L}$：大目标（尺寸大于 $96 * 96$ ）的AP值</p>
 <p>1) 消融实验</p>
 <p>图a是在$γ$设置成0时调整不同$α$值时的检测精度，在$α=0.75$时达到最优；图b是调整不同$γ$和$α$值时的精度，在$γ=2$，$α=0.25$时达到最优；图c是使用不同尺寸和纵横比的候选框对检测结果的影响（sc代表尺度，ar代表纵横比），在尺度为2.纵横比为3时取得最好结果</p>
 <p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.8.jpg" alt=""></p>
