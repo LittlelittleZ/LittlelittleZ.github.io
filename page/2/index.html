@@ -79,36 +79,15 @@
 
 
 
-<meta name="description" content="论文链接: https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2002.05709.pdf 官方github链接: https:&#x2F;&#x2F;github.com&#x2F;google-research&#x2F;simclr 他人复现pytorch链接: https:&#x2F;&#x2F;github.com&#x2F;sthalles&#x2F;SimCLR   1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响">
-<meta property="og:type" content="article">
-<meta property="og:title" content="SimCLR：用于视觉表征的对比学习框架">
-<meta property="og:url" content="http://example.com/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/index.html">
+<meta name="description" content="小舟从此逝，江海寄余生。">
+<meta property="og:type" content="website">
+<meta property="og:title" content="缓缓行舟">
+<meta property="og:url" content="http://example.com/page/2/index.html">
 <meta property="og:site_name" content="缓缓行舟">
-<meta property="og:description" content="论文链接: https:&#x2F;&#x2F;arxiv.org&#x2F;pdf&#x2F;2002.05709.pdf 官方github链接: https:&#x2F;&#x2F;github.com&#x2F;google-research&#x2F;simclr 他人复现pytorch链接: https:&#x2F;&#x2F;github.com&#x2F;sthalles&#x2F;SimCLR   1 概况核心观点：  数据增强(data augmentations)的组合对预测任务的表现有重要影响">
+<meta property="og:description" content="小舟从此逝，江海寄余生。">
 <meta property="og:locale">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/1.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/2.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/4.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/6.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/7.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/8.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/9.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/10.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/11.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/12.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/13.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/14.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/15.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/16.png">
-<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/17.png">
-<meta property="article:published_time" content="2020-09-14T05:27:16.771Z">
-<meta property="article:modified_time" content="2021-01-19T08:52:30.115Z">
 <meta property="article:author" content="微澜">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif">
 
 
 
@@ -138,13 +117,13 @@
 
 
 
-  <link rel="canonical" href="http://example.com/2020/09/14/SimCLR：用于视觉表征的对比学习框架/"/>
+  <link rel="canonical" href="http://example.com/page/2/"/>
 
 
 
 
 
-  <title>SimCLR：用于视觉表征的对比学习框架 | 缓缓行舟</title>
+  <title>缓缓行舟</title>
   
 
 
@@ -167,7 +146,8 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail">
+  <div class="container sidebar-position-left 
+  page-home">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -240,9 +220,179 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-
-  <div id="posts" class="posts-expand">
+  <section id="posts" class="posts-expand">
     
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2020/12/22/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/12/22/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/" itemprop="url">四篇图像解耦工作简要介绍</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-22T19:20:07+08:00">
+                2020-12-22
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h2 id="1-Variational-Interaction-Information-Maximization-for-Cross-domain-Disentanglement"><a href="#1-Variational-Interaction-Information-Maximization-for-Cross-domain-Disentanglement" class="headerlink" title="1 Variational Interaction Information Maximization for Cross-domain Disentanglement"></a>1 Variational Interaction Information Maximization for Cross-domain Disentanglement</h2><p>这篇文章的思想是使用信息论知识，实现跨域图像解耦表示，是基于VAE的一个改进工作。</p>
+<p>对于图像对x，y，二者之间既有共享的表征信息，也有不共享的表征信息，这篇文章提了如下图所示的架构，训练一个VAE，同时学到X的特定表征，Y的特定表征以及X与Y之间的共享表征，这一目的通过最大化X与Y的联合分布之间的边际似然函数实现：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/QQ图片20201222160929.png" alt=""></p>
+<p>在实际应用中直接优化上述公式有些困难，作者还做了其他的简化表达，经过改进后，其损失函数的思想在于，希望每个数据之前特异的特征被编码到各自单独的编码器$Z_x,Z_y$之中，而二者之间相互共享的表征则被同一个编码器所$Z_s$编码，为了实现这一目的（三类表征之间尽量分开），作者引入了互信息思想，希望尽可能最小化$I(Z_s, Z_x)$与$I(Z_s, Z_y)$来实现共享表征与特定表征之间的分离，具体实施时使用了如下图所示的公式：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/QQ截图20201222162104.jpg" alt=""></p>
+<p>上面这个公式的第一项的作用在于鼓励$Z_s, Z_x$联合向共享域X中提供信息（与数据集X保持紧密联系），后两项的目的在于减少二者之间的信息总量。</p>
+<p>同时，为了鼓励共享表征和特异表征之间的分离，还构造了如下的互信息正则化项：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.jpg" alt=""></p>
+<p>上面两个等式中，最大化第一项意味着共享表征中含有来自数据集中提取到的表征，最小化第二项意味着从一个数据集中提取到的表征可以很容易地从另一个数据集中推断出来，意味着这个表征是共享的。</p>
+<p>下图中的编码器r是设计来为下游任务（图像翻译和检索）使用的。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/1.0.jpg" alt="img;" style="zoom:;" /></p>
+<p>解耦效果：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/1.4.jpg" style="zoom:67%;" /></p>
+<p>定量评估没有说明其具体的解耦指标得分，主要是对跨域图像检索进行的评估。</p>
+<h2 id="2-ICAM-Interpretable-Classification-via-Disentangled-Representations-and-Feature-Attribution-Mapping"><a href="#2-ICAM-Interpretable-Classification-via-Disentangled-Representations-and-Feature-Attribution-Mapping" class="headerlink" title="2 ICAM: Interpretable Classification via Disentangled Representations and Feature Attribution Mapping"></a>2 ICAM: Interpretable Classification via Disentangled Representations and Feature Attribution Mapping</h2><p>一篇在医学影像领域的解耦应用，主要使用GAN-VAE架构，用来鉴别正常人与病患身体结构的差异性，进行影像诊断。网络框架如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/2.1.jpg" alt=""></p>
+<p>简要介绍网络各个组成部分的作用：</p>
+<p>内容编码器$E^c$：编码输入图像对中共享的与类别无关的信息，用鉴别器对编码特征进行判断，希望编码器对图像对的两张图像的共享信息输入趋同的特征；</p>
+<p>属性编码器$E^a$：编码类别相关特征，用来分类；</p>
+<p>生成器G：以上述两个编码器输出的特征作为联合输入，目的在于输出受内容特征与属性特征共同控制的图像；</p>
+<p>特征映射$Attr Map$：定位类间差异区域。</p>
+<p>整个框架基于GAN网络，同时引入VAE思想，使用编码器编码的特征作为重构输入而不是随机噪声，在生成虚假图像后再次进行一次图像生成，用二次生成的图像与真实图像之间的差异性作为最根本的损失。通过这一结构，其目的在于挖掘出决定相似图像类别差异的特征，实现类别与无关特征之间的解耦。</p>
+<h2 id="3-Elastic-InfoGAN-Unsupervised-Disentangled-Representation-Learning-in-Class-Imbalanced-Data"><a href="#3-Elastic-InfoGAN-Unsupervised-Disentangled-Representation-Learning-in-Class-Imbalanced-Data" class="headerlink" title="3 Elastic-InfoGAN:  Unsupervised Disentangled Representation Learning in Class-Imbalanced Data"></a>3 Elastic-InfoGAN:  Unsupervised Disentangled Representation Learning in Class-Imbalanced Data</h2><p>本文的贡献是用InfoGAN实现对类不平衡数据的解耦。</p>
+<p>InfoGAN假设数据服从均匀分布，因此在类别不平衡的数据中解耦表现较差：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.1.jpg" alt=""></p>
+<p>这篇文章针对这一问题对InfoGAN做了两个改进，其一是不对数据分布进行假设，而将其视为优化过程中的可学习参数，为了实现这一点，采用Gumbel-Softmax分布作为噪声的潜在分布，该分布有可微参数，因此可以进行更新；其二是通过实验发现InfoGAN在类不平衡信息中很容易学到图像的低级特征（与之前分享的解释对比学习工作的发现有异曲同工之妙），因此这篇文章引入对比学习的思想，对数据进行增强，强迫模型学习身份表示，以抑制类不平衡的影响。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.2.jpg" alt=""></p>
+<p>整篇文章的工作重点就是上述的两个方面，其一，用可学习分布代替InfoGAN假设的均匀分布，优化InfoGAN的同时更新分布（左图）。k维类别潜码的采样方法如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.3.jpg" alt=""></p>
+<p>$g_i$代表从Gumbel（0，1）分布采样的样本点，温度参数代表不同类之间的相似程度，假如温度参数很小，将会趋近于onn-hot编码（均匀分布）。</p>
+<p>其二，使用简单数据增强方法给数据构造一个正对，同时引入负对，添加一个对比损失项，强迫模型学习身份表示。使用的是常规的对比损失：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.4.jpg" alt=""></p>
+<p>最终的损失为InfoLoss和对比损失之和：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.5.jpg" alt=""></p>
+<p>定性实验结果：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.6.jpg" alt=""></p>
+<p>定量实验结果：</p>
+<p>使用NMI和ENT（平均熵，评价同一个潜码生成的图像是否属于同一类；每一个潜码是否只与一个真实类别标签关联；越小越好）作为评价指标：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.7.jpg" alt=""></p>
+<h2 id="4-WAE模型"><a href="#4-WAE模型" class="headerlink" title="4 WAE模型"></a>4 WAE模型</h2><p>ICLR2021中有两篇论文在WAE（WASSERSTEIN AUTOENCODER）的框架下进行解耦图像生成，WAE是2018年由Google在WGAN的基础上提出来的一种自编码器模型，由于目前没有了解其原理，因此只对这两篇论文在WAE基础上的改进进行简单的介绍。</p>
+<h3 id="4-1-Learning-disentangled-representations-with-the-Wasserstein-Autoencoder"><a href="#4-1-Learning-disentangled-representations-with-the-Wasserstein-Autoencoder" class="headerlink" title="4.1 Learning  disentangled representations with the Wasserstein Autoencoder"></a>4.1 Learning  disentangled representations with the Wasserstein Autoencoder</h3><p>想法是把β-TCVAE的构造移植到WAE模型中，重点在于利用TCVAE的loss对WAE进行改进：</p>
+<p>TCWAE loss：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.1.jpg" alt=""></p>
+<p>β-TCVAE loss：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.2.jpg" alt=""></p>
+<p>对比两项损失，可以发现TCWAE具有与β-TCVAE几乎相同的loss函数，区别在于没有最后一个互信息项，以及在第一项的度量上有所差异。</p>
+<p>效果：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.3.jpg" alt=""></p>
+<h3 id="4-2-DISENTANGLED-RECURRENT-WASSERSTEIN-AUTOENCODER"><a href="#4-2-DISENTANGLED-RECURRENT-WASSERSTEIN-AUTOENCODER" class="headerlink" title="4.2 DISENTANGLED RECURRENT WASSERSTEIN AUTOENCODER"></a>4.2 DISENTANGLED RECURRENT WASSERSTEIN AUTOENCODER</h3><p>第二篇WAE相关的文章是将WAE应用于时序图像解耦的工作，用来捕捉时序图像上的相关信息，实现静态因子和动态因子的解耦。</p>
+<p><img src="" alt=""><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.4.jpg" alt="4.4" style="zoom:67%;" /></p>
+<p>上图是这篇文章提出了来的模型的解耦效果，每一行都代表一个时序（对应不同表情）。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
 
   
 
@@ -272,7 +422,9 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">SimCLR：用于视觉表征的对比学习框架</h1>
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/" itemprop="url">SimCLR：用于视觉表征的对比学习框架</a></h1>
         
 
         <div class="post-meta">
@@ -322,7 +474,9 @@
       
 
       
-        <p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2002.05709.pdf">https://arxiv.org/pdf/2002.05709.pdf</a></p>
+        
+          
+            <p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2002.05709.pdf">https://arxiv.org/pdf/2002.05709.pdf</a></p>
 <p>官方github链接: <a target="_blank" rel="noopener" href="https://github.com/google-research/simclr">https://github.com/google-research/simclr</a></p>
 <p>他人复现pytorch链接: <a target="_blank" rel="noopener" href="https://github.com/sthalles/SimCLR">https://github.com/sthalles/SimCLR</a> </p>
 <p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif" style="zoom:67%;" /></p>
@@ -426,6 +580,8 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
 <p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/16.png" alt="半监督学习" style="zoom: 80%;" /></p>
 <h3 id="6-3-迁移学习"><a href="#6-3-迁移学习" class="headerlink" title="6.3 迁移学习"></a>6.3 迁移学习</h3><p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/17.png" alt="迁移学习" style="zoom:67%;" /></p>
 
+          
+        
       
     </div>
     
@@ -442,28 +598,12 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
       
 
       
-      
+
       
 
       
-        <div class="post-nav">
-          <div class="post-nav-next post-nav-item">
-            
-          </div>
-
-          <span class="post-nav-divider"></span>
-
-          <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2020/12/22/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/" rel="prev" title="四篇图像解耦工作简要介绍">
-                四篇图像解耦工作简要介绍 <i class="fa fa-chevron-right"></i>
-              </a>
-            
-          </div>
-        </div>
       
-
-      
+        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -473,11 +613,14 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
   </article>
 
 
+    
+  </section>
 
-    <div class="post-spread">
-      
-    </div>
-  </div>
+  
+  <nav class="pagination">
+    <a class="extend prev" rel="prev" href="/">&lt;i class&#x3D;&quot;fa fa-angle-left&quot;&gt;&lt;&#x2F;i&gt;</a><a class="page-number" href="/">1</a><span class="page-number current">2</span>
+  </nav>
+
 
 
           </div>
@@ -485,10 +628,6 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
 
 
           
-
-  
-
-
 
         </div>
         
@@ -509,17 +648,8 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
       
 
       
-        <ul class="sidebar-nav motion-element">
-          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
-            文章目录
-          </li>
-          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
-            站点概览
-          </li>
-        </ul>
-      
 
-      <section class="site-overview-wrap sidebar-panel">
+      <section class="site-overview-wrap sidebar-panel sidebar-panel-active">
         <div class="site-overview">
           <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
             
@@ -561,22 +691,6 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
         </div>
       </section>
 
-      
-      <!--noindex-->
-        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
-          <div class="post-toc">
-
-            
-              
-            
-
-            
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A6%82%E5%86%B5"><span class="nav-number">1.</span> <span class="nav-text">1 概况</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E6%96%B9%E6%B3%95"><span class="nav-number">2.</span> <span class="nav-text">2 方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6"><span class="nav-number">2.1.</span> <span class="nav-text">2.1 对比学习框架</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E5%A4%A7Batch-Size%E8%AE%AD%E7%BB%83%E6%96%B9%E6%B3%95"><span class="nav-number">2.2.</span> <span class="nav-text">2.2 大Batch Size训练方法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E8%AF%84%E4%BB%B7%E6%96%B9%E6%A1%88"><span class="nav-number">2.3.</span> <span class="nav-text">2.3 评价方案</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">3.</span> <span class="nav-text">3 数据增强</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%B6%B5%E7%9B%96%E4%BA%86%E5%AF%B9%E6%AF%94%E9%A2%84%E6%B5%8B%E4%BB%BB%E5%8A%A1%E7%9A%84%E4%B8%A4%E7%A7%8D%E6%83%85%E5%86%B5"><span class="nav-number">3.1.</span> <span class="nav-text">3.1 数据增强涵盖了对比预测任务的两种情况</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E4%B8%8D%E5%90%8C%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA%E6%96%B9%E5%BC%8F%E7%9A%84%E7%BB%84%E5%90%88%E5%AF%B9%E8%A1%A8%E5%BE%81%E5%AD%A6%E4%B9%A0%E6%95%88%E6%9E%9C%E8%87%B3%E5%85%B3%E9%87%8D%E8%A6%81"><span class="nav-number">3.2.</span> <span class="nav-text">3.2 不同数据增强方式的组合对表征学习效果至关重要</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-3-%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%AF%94%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E6%9B%B4%E9%9C%80%E8%A6%81%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BA"><span class="nav-number">3.3.</span> <span class="nav-text">3.3 对比学习比监督学习更需要数据增强</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#4-Encoder-%E5%92%8CHead-%E7%9A%84%E6%9E%B6%E6%9E%84"><span class="nav-number">4.</span> <span class="nav-text">4 Encoder 和Head 的架构</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#4-1-%E6%9B%B4%E5%A4%A7%E7%9A%84%E6%A8%A1%E5%9E%8B%E4%BD%BF%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AF%B9%E6%AF%94%E6%A8%A1%E5%9E%8B%E8%A1%A8%E7%8E%B0%E6%9B%B4%E5%A5%BD"><span class="nav-number">4.1.</span> <span class="nav-text">4.1 更大的模型使无监督对比模型表现更好</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-2-%E9%9D%9E%E7%BA%BF%E6%80%A7%E6%8A%95%E5%BD%B1head%E6%9C%89%E5%8A%A9%E4%BA%8E%E6%8F%90%E5%8D%87%E5%85%B6%E4%B9%8B%E5%89%8D%E7%BD%91%E7%BB%9C%E5%B1%82%E7%9A%84%E8%A1%A8%E5%BE%81%E8%B4%A8%E9%87%8F"><span class="nav-number">4.2.</span> <span class="nav-text">4.2 非线性投影head有助于提升其之前网络层的表征质量</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#5-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E5%92%8CBatch-Size"><span class="nav-number">5.</span> <span class="nav-text">5 损失函数和Batch Size</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#5-1-%E5%B8%A6%E6%9C%89%E5%8F%AF%E8%B0%83%E6%B8%A9%E5%BA%A6%E5%8F%82%E6%95%B0%E7%9A%84%E5%BD%92%E4%B8%80%E5%8C%96%E4%BA%A4%E5%8F%89%E7%86%B5%E6%8D%9F%E5%A4%B1%E6%98%AF%E6%9B%B4%E4%BC%98%E9%80%89%E6%8B%A9"><span class="nav-number">5.1.</span> <span class="nav-text">5.1 带有可调温度参数的归一化交叉熵损失是更优选择</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-2-%E5%A4%A7Batch-Size%E5%92%8C%E6%9B%B4%E5%A4%9A%E8%AE%AD%E7%BB%83%E5%AF%B9%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%9B%B4%E6%9C%89%E7%9B%8A"><span class="nav-number">5.2.</span> <span class="nav-text">5.2 大Batch Size和更多训练对对比学习更有益</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#6-%E5%AE%9E%E9%AA%8C%E5%AF%B9%E6%AF%94"><span class="nav-number">6.</span> <span class="nav-text">6 实验对比</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#6-1-%E7%BA%BF%E6%80%A7%E8%AF%84%E4%BC%B0"><span class="nav-number">6.1.</span> <span class="nav-text">6.1 线性评估</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-2-%E5%8D%8A%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0"><span class="nav-number">6.2.</span> <span class="nav-text">6.2 半监督学习</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#6-3-%E8%BF%81%E7%A7%BB%E5%AD%A6%E4%B9%A0"><span class="nav-number">6.3.</span> <span class="nav-text">6.3 迁移学习</span></a></li></ol></li></ol></div>
-            
-
-          </div>
-        </section>
-      <!--/noindex-->
       
 
       
@@ -717,10 +831,6 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
 
 
   
-  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
-<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
-
-
 
   
 

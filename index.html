@@ -235,6 +235,385 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/20/Focal%20Loss%20for%20Dense%20Object%20Detection/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/20/Focal%20Loss%20for%20Dense%20Object%20Detection/" itemprop="url">《Focal Loss for Dense Object Detection》阅读笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-20T15:10:23+08:00">
+                2021-01-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Focal-Loss-for-Dense-Object-Detection"><a href="#Focal-Loss-for-Dense-Object-Detection" class="headerlink" title="Focal Loss for Dense Object Detection"></a>Focal Loss for Dense Object Detection</h1><p><strong>题目</strong>：用于稠密目标检测的Focal Loss</p>
+<p><strong>来源</strong>：ICCV 2017， Facebook 何恺明</p>
+<h2 id="1-目标检测算法简要介绍"><a href="#1-目标检测算法简要介绍" class="headerlink" title="1. 目标检测算法简要介绍"></a>1. 目标检测算法简要介绍</h2><p>目标检测算法是对图像中的物体同时进行检测与分类的算法，算法执行结果如下图第三张图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/aHR0cHM6Ly9hZTAxLmFsaWNkbi5jb20va2YvVVRCOFhaTXF2cFBKWEtKa1NhaFZxNnh5ekZYYTAuanBn" alt=""></p>
+<p>目标检测算法可分为两类，即<strong>one-stage</strong> 和<strong>two-stage</strong>算法：</p>
+<p>1) one-stage算法直接使用一个神经网络同时进行目标位置和类别的确定；</p>
+<p>2) two-stage算法先产生候选框，确定目标位置，再对候选框区域进行分类与回归。</p>
+<p>在实际应用时，两种算法都会先产生一定数量的候选框，一种方法是用一定方法对图片进行分割实现，再通过后续操作，选出与目标更为匹配的候选框并进行缩放。</p>
+<p>两种算法的优缺点比较：</p>
+<div class="table-container">
+<table>
+<thead>
+<tr>
+<th></th>
+<th>one-stage</th>
+<th>two-stage</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Advantage</strong></td>
+<td>Faster</td>
+<td>Higher Accuracy</td>
+</tr>
+<tr>
+<td><strong>Disadvantage</strong></td>
+<td>Lower Accuracy</td>
+<td>Slower</td>
+</tr>
+<tr>
+<td><strong>Exemple</strong></td>
+<td>Yolo, SSD</td>
+<td>R-CNN Family</td>
+</tr>
+</tbody>
+</table>
+</div>
+<h2 id="2-Motivation"><a href="#2-Motivation" class="headerlink" title="2. Motivation"></a>2. Motivation</h2><p>1) 目前主流基于深度学习的目标检测算法可以分为one-stage和two-stage算法两种，其中one-stage算法速度快，但是精度较低。</p>
+<p>2) 作者认为one-stage算法精度低的主要原因是<strong>类别不平衡</strong>(通俗来说，one-stage算法在进行目标检测时会产生几万到几十万级别的候选框，而一张图片中的真实目标只占图片的很小一部分区域，故而在这些候选框中，绝大部分在分类时都被归为负类，只有少部分候选框会被归为正类，导致<strong>正负类不平衡</strong>，同时，绝大部分候选框中的区域都很容易区分，只有少部分候选框中的区域难以分类，从而出现大量简单样本，而困难样本数量过少，导致<strong>样本的难易度不平衡</strong>)。</p>
+<h2 id="3-Contribution"><a href="#3-Contribution" class="headerlink" title="3. Contribution"></a>3. Contribution</h2><p>本文工作是针对one-stage类别不平衡问题进行的改进。</p>
+<p>1) 本文最主要的贡献是对交叉熵损失进行了改进，提出Focal loss改善类别不平衡的问题。</p>
+<p>2) 此外，本文还提出了一个RetinaNet验证其Focal loss的有效性。</p>
+<h2 id="4-Focal-Loss"><a href="#4-Focal-Loss" class="headerlink" title="4. Focal Loss"></a>4. Focal Loss</h2><p>一个传统的交叉熵损失cross entropy (CE)的表达式如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.1.jpg" alt=""></p>
+<p>$y=1$表示正类样本，$-1$表示负类样本，$p$表示CNN对该样本预测的概率似然。</p>
+<p>用$p_t$简化上述表示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.2.jpg" alt=""></p>
+<p>得到CE的表达式：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.3.jpg" alt=""></p>
+<p>$p_t$越大，表明模型对这个样本的预测越容易。</p>
+<p>交叉熵损失有一个问题，就是即使当$p_t⋙0.5$时，其loss仍然不会趋近于0（如下图蓝线所示），这意味着简单样本（网络容易分类的样本）对loss仍有贡献，当简单样本处于压倒性优势地位时，真正需要的数量较少的困难样本没有对网络的训练发挥作用，导致网络没能按照理想方向收敛。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.4.jpg" style="zoom:67%;" /></p>
+<p>因此，一个直观的思路就是降低简单样本在loss中所占的权重，本文使用$(1-p_t)^γ$作为权重，这样一来，$p_t$值较大的简单样本就有一个较小的权重，对loss的贡献程度被削弱，超参数$γ$控制削弱的力度。得到Focal loss如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.5.jpg" alt=""></p>
+<p>从上图可以看出，改进过的Focal loss有效降低了简单样本对loss的贡献。</p>
+<p>但是这个Focal Loss没有解决正负样本数量不平衡的问题，在提出的Focal Loss基础上，作者进一步引入权重$α_t$来解决这一问题：</p>
+<script type="math/tex; mode=display">
+α_t=\begin{cases} α,\ \mathrm{if}\ y=1 \\ 1-α, \ \mathrm{otherwise}.\\ \end{cases}</script><p>其中$α$是一个超参数，代表控制程度，可以调节正负样本对loss的贡献程度，因此，得到最终的Focal Loss:</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.6.jpg" alt=""></p>
+<p>同时，作者提出，类不平衡问题会导致二元分类模型在训练时不稳定，因为通常在对模型初始化时，对于正负类都置以相同的权值，而实际上正负类出现的频率并不一致，导致模型训练不稳定。</p>
+<p>作者提出认为给定一个先验$π$，使模型在初期对于出现频率较低的类别有更低的置信度，以便和实际情况相匹配。</p>
+<h2 id="5-RetinaNet-Detector"><a href="#5-RetinaNet-Detector" class="headerlink" title="5. RetinaNet Detector"></a>5. RetinaNet Detector</h2><p>本文构造了一个RetinaNet网络作为目标检测器，其结构如下图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.7.jpg" alt=""></p>
+<p>该网络由一个用来提取特征的Feature Pyramid Network(FPN, 金字塔型主网络和一个分类子网络以及一个边框子网络组成。</p>
+<p>FPN主网络基于ResNet构造，目的是增强CNN的泛化能力，同时可以提取不同尺度的特征。</p>
+<p>分类子网络由四个相同的$3<em>3$卷积层组成，输出一个$W</em>H<em>256$的特征，再经过一个$3</em>3$卷积层输出$W<em>H</em>KA$的特征，K是目标类别数量，A是网络设计的锚点（候选区域）的数量，最后进行二值分类。</p>
+<p>边框子网络和分类子网络结构基本相同，在最后一层的输出以及后续处理上有所差异，其作用是优化输出边框和groundtruch之间的偏移量。</p>
+<p>由于网络不是本文的主要内容，因此不做过多介绍。</p>
+<h2 id="6-Experiment"><a href="#6-Experiment" class="headerlink" title="6. Experiment"></a>6. Experiment</h2><p>本实验基于COCO目标检测数据集。</p>
+<p>实验指标：</p>
+<p>$AP$:IoU从0.5：0.05：0.95时的平均精度</p>
+<p>$AP_{50}$：代表IoU为0.5时的测量值</p>
+<p>$AP_{75}$：代表IoU为0.75时的测量值</p>
+<p>$AP_{S}$：小目标（尺寸小于$32*32$）的AP值</p>
+<p>$AP_{M}$：中等目标（尺寸为$32<em>32$到$96</em>96$之间）的AP值</p>
+<p>$AP_{L}$：大目标（尺寸大于$96*96$）的AP值</p>
+<p>1) 消融实验</p>
+<p>图a是在$γ$设置成0时调整不同$α$值时的检测精度，在$α=0.75$时达到最优；图b是调整不同$γ$和$α$值时的精度，在$γ=2$，$α=0.25$时达到最优；图c是使用不同尺寸和纵横比的候选框对检测结果的影响（sc代表尺度，ar代表纵横比），在尺度为2.纵横比为3时取得最好结果</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.8.jpg" alt=""></p>
+<p>2) loss对比试验</p>
+<p>本文比较了Focal Loss和OHEM 两种loss的作用，OHEM是一种聚焦于困难样本的loss，与Focal Loss类似，其注重那些难以被正确分类的困难样本，但是OHEM完全抛弃了简单样本的作用比较第二大行和第三大行，如上图(d)所示，1:3代表强行固定正负样本比例为1：3，可以发现并没有实际作用。</p>
+<p>Focal Loss比表现最好的OHEM方法提升了3.2AP。</p>
+<p>同时，作者还使用Hinge Loss进行了实验，但是没有取得有意义的结果。</p>
+<p>3) 算法对比实验</p>
+<p>本文比较了其RetinaNet网络（基于ResNet50和101）与其他方法的对比，根据上图e以及下图可以发现本方法相对而言速度更快，并且在相同时间内可以取得更好的AO值。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.9.jpg" style="zoom:67%;" /></p>
+<p>4) Focal Loss的作用验证</p>
+<p>下图是设置不同$γ$值时对正样本（前景）和负样本（背景）的累计误差的影响，可以发现，$γ$的大小对正样本在loss中发挥的作用影响不大，而增大$γ$值对负样本在loss中的影响很大。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.10.jpg" alt=""></p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/20/Intriguing%20Properties%20of%20Contrastive%20Losses/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/01/20/Intriguing%20Properties%20of%20Contrastive%20Losses/" itemprop="url">《Intriguing Properties of Contrastive Losses》阅读笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-20T15:10:23+08:00">
+                2021-01-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="Intriguing-Properties-of-Contrastive-Losses"><a href="#Intriguing-Properties-of-Contrastive-Losses" class="headerlink" title="Intriguing Properties of Contrastive Losses"></a>Intriguing Properties of Contrastive Losses</h1><p><strong>题目</strong>：对比损失的有趣特性</p>
+<h2 id="1-概要"><a href="#1-概要" class="headerlink" title="1. 概要"></a>1. 概要</h2><p>1) 本文对目前广泛使用的标准对比损失进行了推广，并研究了广义对比损失在参数和数据分布上的一些性质。</p>
+<p>2) 本文通过实验发现，对比损失倾向于学习简单特征，并且少量简单特征即可压制甚至完全消除图像更为复杂且本质的特征的作用，进而影响模型表现。</p>
+<h2 id="2-广义对比损失"><a href="#2-广义对比损失" class="headerlink" title="2. 广义对比损失"></a>2. 广义对比损失</h2><h3 id="2-1-广义对比损失的定义"><a href="#2-1-广义对比损失的定义" class="headerlink" title="2.1 广义对比损失的定义"></a>2.1 广义对比损失的定义</h3><p>本文在目前广泛使用的对比损失的基础之上，提出了广义对比损失的表达形式，并研究了其中的一些性质。</p>
+<p>作者提出了一种广义对比损失的表达形式如下:</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{\mathrm{generalized\ contrastive}}=\mathcal{L}_{\mathrm{alignment}}+λ\mathcal{L}_{\mathrm{distribution}}</script><p>第一项为<strong>$\mathcal{L}_{\mathrm{alignment}}$，其作用是拉近正对之间的距离</strong>；第二项为$\mathcal{L}_{\mathrm{distribution}}$<strong>，作用是让负样本服从于给定的先验分布</strong>。</p>
+<h3 id="2-2-标准对比损失是广义对比损失的一个特例"><a href="#2-2-标准对比损失是广义对比损失的一个特例" class="headerlink" title="2.2 标准对比损失是广义对比损失的一个特例"></a>2.2 标准对比损失是广义对比损失的一个特例</h3><p>那么，我们常用的交叉熵损失是否符合上述表达式呢？</p>
+<p>一个标准的基于交叉熵的对比损失表达式如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.1.jpg" style="zoom:67%;" /></p>
+<p>其中，$\mathrm{sim}$代表余弦相似度。</p>
+<p>将对数项进行分解，转化为如下形式：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.2.jpg" style="zoom:67%;" /></p>
+<p>上式第一项的作用非常明确，即拉近正对之间的相似性，最小化第二项的作用是拉远负样本与负样本之间的距离，最终将使得隐藏表征$z$趋近于超球面中的均匀分布，因此可以视为是一种分布匹配损失。因此，基于交叉熵的标准对比损失属于广义对比损失的一个特例，最终将使负样本趋近于均匀分布。</p>
+<p>在上式右侧，温度参数$τ$出现在第二项的两个地方，其中一个代表的是$\mathcal{L}_{\mathrm{distribution}}$的权重，另一处代表的是高斯核的宽度，作者认为这两处的值不一定非要相等，可以解耦，用$λ$表示代表权值的一处，得到$τ$解耦的广义交叉熵对比损失：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.3.jpg" style="zoom:67%;" /></p>
+<p><strong>温度参数$τ$和尺度参数$λ$的关系：</strong></p>
+<p>解耦之后的标准交叉熵损失具有两个可调参数$τ$和$λ$，作者研究了设置不同值的情况下，二者对用标准对比损失所训练出来的分类模型线性评估结果的影响：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.4.jpg" alt=""></p>
+<p>从上图中可以发现，$τ$和$λ$对线性评估结果呈现负相关关系，在设置参数时应从左下和右上端取值。</p>
+<h3 id="2-3-广义对比损失和互信息的关系"><a href="#2-3-广义对比损失和互信息的关系" class="headerlink" title="2.3 广义对比损失和互信息的关系"></a>2.3 广义对比损失和互信息的关系</h3><p>有研究已经证明，基于交叉熵的标准对比损失是互信息的一个下界，本文认为广义对比损失与互信息仍然保持这种关系。</p>
+<p>两个潜在变量$U$与$V$的互信息可以写为：</p>
+<script type="math/tex; mode=display">
+I(U;V)=H(U)-H(U|V)</script><p>将其与广义对比损失相比较：</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{\mathrm{generalized\ contrastive}}=\mathcal{L}_{\mathrm{alignment}}+λ\mathcal{L}_{\mathrm{distribution}}</script><p>$\mathcal{L}_{\mathrm{alignment}}$的作用在于拉近正类内部的相似性，即减少不同类之间的不确定性，与互信息中的第二项相对应，而</p>
+<p>$\mathcal{L}_{\mathrm{distribution}}$的作用在于尽量使负类之间趋近于先验分布，这一损失将会尽量使得样本的熵最大，故而可以看作$H(U)$在表征中的代理，当先验分布是均匀分布时，熵最大。不过广义对比损失比互信息在第二项多了一个可调参数$λ$。</p>
+<h3 id="2-4-使用不同先验分布对对比损失表现的影响"><a href="#2-4-使用不同先验分布对对比损失表现的影响" class="headerlink" title="2.4 使用不同先验分布对对比损失表现的影响"></a>2.4 使用不同先验分布对对比损失表现的影响</h3><p>标准正态分布使用的是交叉熵损失，使得$\mathcal{L}_{\mathrm{distribution}}$趋近于超球面上的均匀分布。为了研究其他的先验分布对于对比损失的表现是否有影响，本文根据最优运输理论，构造出了基于Sliced Wasserstein Distance(SWD)距离的均匀超球面(Uniform hypersphere)分布、均匀超立方分布(Uniform hypercube)和高斯分布(Normal distribution):</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.5.jpg" style="zoom:67%;" /></p>
+<p>在使用SWD Loss时，首先根据最优运输算法将样本进行有序排列，对于1维样本直接计算排列后的1维Wasserstein距离，对于n维样本，先将其投影到n个1维正交子空间中，在计算并求和所有子空间的1维Wasserstein距离。（粗略介绍，详细方法可以查看论文）。</p>
+<p>使用最优运输方法构造出符合不同先验分布的SWD Loss之后，评估给出的Loss在Cifar10、ImageNet（线性投影头为2层和3层）下的线性评估结果，如下图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.6.jpg" alt=""></p>
+<p>最终发现，对于CIFAR10，随着epoch的增大，不同先验分布对线性评估影响不大；对于使用2层线性投影头的ImageNet，解耦标准交叉熵损失和服从均匀超球面先验的SWD表现更好一些，但是一旦把线性投影头换成3层的，不同先验分布之间就没有很明显的区别。</p>
+<h2 id="3-特征压制"><a href="#3-特征压制" class="headerlink" title="3. 特征压制"></a>3. 特征压制</h2><p>如下图所示，SimCLR在进行数据增强时发现，相比于裁剪和旋转等不改变图像内容的操作，对图像进行颜色增强会提升模型的表现：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.7.jpg" style="zoom:67%;" /></p>
+<p>这可能说明，在模型利用对比损失学习表征时，可能更倾向于学习图像之间共享的颜色信息，意味着颜色特征压制了其他特征的表现。为了研究这一现象，作者在两个数据集上进行了不同实验进行探究。</p>
+<h3 id="3-1-在DigitOnImageNet-dataset上的实验"><a href="#3-1-在DigitOnImageNet-dataset上的实验" class="headerlink" title="3.1 在DigitOnImageNet dataset上的实验"></a>3.1 在DigitOnImageNet dataset上的实验</h3><p>DigitOnImageNet dataset以ImageNet为基础，给每一张图片添加一个MNIST数据集中的数字，并将这一数字复制到图片中的九个位置，之后使用SimCLR的数据增强方法进行增强，再进行训练。本文认为额外添加的MNIST数字特征与图像原始特征是竞争关系。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.8.jpg" alt=""></p>
+<p>使用batch_size为1024，2层线性投影头的SimCLR模型训练上述数据集，线性评估结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.9.jpg" alt=""></p>
+<p>可以看到，对于有监督学习方法，额外的数字特征没有对分类线性评估结果造成干扰，而对对比学习方法具有较大影响，随着温度参数和添加的数字种类增加，线性评估结果均变差了。由此认为，对比学习学习到了更为简单的数字特征，而没有学习到占大部分的更为复杂的图像特征。</p>
+<h3 id="3-2-在RandBit-dataset数据集上的实验"><a href="#3-2-在RandBit-dataset数据集上的实验" class="headerlink" title="3.2 在RandBit dataset数据集上的实验"></a>3.2 在RandBit dataset数据集上的实验</h3><p>上一个实验说明了简单特征可以抑制复杂特征在对比学习中的影响，在此基础上，作者设计了一种更为极端的数据集进行实验。</p>
+<p>对于一幅RGB图像，先额外从$[1, log_2(n)]$范围中采样一个整数，将其表示为$n$个二进制通道，这意味着给这张图象增加了$n$个通道的数据，之后只对RGB图像部分进行数据增强操作，额外增加的部分不进行数据增强。示意图如下图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.13.jpg" alt=""></p>
+<p>本文构建了基于CIFAR10，MNIST和ImageNet三个数据集的RandBit dataset，使用不同的模型进行分类训练，评估其分类精度：</p>
+<p>在CIFAR10上的表现如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.10.jpg" style="zoom:67%;" /></p>
+<p>在MNIST上的表现如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.11.jpg" style="zoom:67%;" /></p>
+<p>在ImageNet上的表现如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.12.jpg" style="zoom:67%;" /></p>
+<p>横坐标为$n$的值，可以看出，在三个数据集上，对比学习方法在不同模型上的表现均显著变差，意味着即使是非常少量共享信息（几个比特）的简单特征对对比损失的表现都可能产生主导性影响。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/19/High-Frequency_Component_Helps_Explain_the_Generalization_of_Convolutional_Neural_Networks/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -894,7 +1273,7 @@ L=-\log \sum_{t=1}^{T} p\left(y_{t} \mid y_{<t}, \mathcal{G}, \mathcal{I}\right)
         
           <h1 class="post-title" itemprop="name headline">
                 
-                <a class="post-title-link" href="/2021/01/19/Learning%20Selective%20Self-Mutual%20Attention%20for%20RGB-D/" itemprop="url">《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D>阅读笔记</a></h1>
+                <a class="post-title-link" href="/2021/01/19/Learning%20Selective%20Self-Mutual%20Attention%20for%20RGB-D/" itemprop="url">《Learning Selective Self-Mutual Attention for RGB-D Saliency Detection--RGB-D》阅读笔记</a></h1>
         
 
         <div class="post-meta">
@@ -1702,401 +2081,13 @@ A^d(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^d(\boldsymbol{X}^d
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/12/22/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="缓缓行舟">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/22/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/" itemprop="url">四篇图像解耦工作简要介绍</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-22T19:20:07+08:00">
-                2020-12-22
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="1-Variational-Interaction-Information-Maximization-for-Cross-domain-Disentanglement"><a href="#1-Variational-Interaction-Information-Maximization-for-Cross-domain-Disentanglement" class="headerlink" title="1 Variational Interaction Information Maximization for Cross-domain Disentanglement"></a>1 Variational Interaction Information Maximization for Cross-domain Disentanglement</h2><p>这篇文章的思想是使用信息论知识，实现跨域图像解耦表示，是基于VAE的一个改进工作。</p>
-<p>对于图像对x，y，二者之间既有共享的表征信息，也有不共享的表征信息，这篇文章提了如下图所示的架构，训练一个VAE，同时学到X的特定表征，Y的特定表征以及X与Y之间的共享表征，这一目的通过最大化X与Y的联合分布之间的边际似然函数实现：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/QQ图片20201222160929.png" alt=""></p>
-<p>在实际应用中直接优化上述公式有些困难，作者还做了其他的简化表达，经过改进后，其损失函数的思想在于，希望每个数据之前特异的特征被编码到各自单独的编码器$Z_x,Z_y$之中，而二者之间相互共享的表征则被同一个编码器所$Z_s$编码，为了实现这一目的（三类表征之间尽量分开），作者引入了互信息思想，希望尽可能最小化$I(Z_s, Z_x)$与$I(Z_s, Z_y)$来实现共享表征与特定表征之间的分离，具体实施时使用了如下图所示的公式：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/QQ截图20201222162104.jpg" alt=""></p>
-<p>上面这个公式的第一项的作用在于鼓励$Z_s, Z_x$联合向共享域X中提供信息（与数据集X保持紧密联系），后两项的目的在于减少二者之间的信息总量。</p>
-<p>同时，为了鼓励共享表征和特异表征之间的分离，还构造了如下的互信息正则化项：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.jpg" alt=""></p>
-<p>上面两个等式中，最大化第一项意味着共享表征中含有来自数据集中提取到的表征，最小化第二项意味着从一个数据集中提取到的表征可以很容易地从另一个数据集中推断出来，意味着这个表征是共享的。</p>
-<p>下图中的编码器r是设计来为下游任务（图像翻译和检索）使用的。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/1.0.jpg" alt="img;" style="zoom:;" /></p>
-<p>解耦效果：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/1.4.jpg" style="zoom:67%;" /></p>
-<p>定量评估没有说明其具体的解耦指标得分，主要是对跨域图像检索进行的评估。</p>
-<h2 id="2-ICAM-Interpretable-Classification-via-Disentangled-Representations-and-Feature-Attribution-Mapping"><a href="#2-ICAM-Interpretable-Classification-via-Disentangled-Representations-and-Feature-Attribution-Mapping" class="headerlink" title="2 ICAM: Interpretable Classification via Disentangled Representations and Feature Attribution Mapping"></a>2 ICAM: Interpretable Classification via Disentangled Representations and Feature Attribution Mapping</h2><p>一篇在医学影像领域的解耦应用，主要使用GAN-VAE架构，用来鉴别正常人与病患身体结构的差异性，进行影像诊断。网络框架如下：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/2.1.jpg" alt=""></p>
-<p>简要介绍网络各个组成部分的作用：</p>
-<p>内容编码器$E^c$：编码输入图像对中共享的与类别无关的信息，用鉴别器对编码特征进行判断，希望编码器对图像对的两张图像的共享信息输入趋同的特征；</p>
-<p>属性编码器$E^a$：编码类别相关特征，用来分类；</p>
-<p>生成器G：以上述两个编码器输出的特征作为联合输入，目的在于输出受内容特征与属性特征共同控制的图像；</p>
-<p>特征映射$Attr Map$：定位类间差异区域。</p>
-<p>整个框架基于GAN网络，同时引入VAE思想，使用编码器编码的特征作为重构输入而不是随机噪声，在生成虚假图像后再次进行一次图像生成，用二次生成的图像与真实图像之间的差异性作为最根本的损失。通过这一结构，其目的在于挖掘出决定相似图像类别差异的特征，实现类别与无关特征之间的解耦。</p>
-<h2 id="3-Elastic-InfoGAN-Unsupervised-Disentangled-Representation-Learning-in-Class-Imbalanced-Data"><a href="#3-Elastic-InfoGAN-Unsupervised-Disentangled-Representation-Learning-in-Class-Imbalanced-Data" class="headerlink" title="3 Elastic-InfoGAN:  Unsupervised Disentangled Representation Learning in Class-Imbalanced Data"></a>3 Elastic-InfoGAN:  Unsupervised Disentangled Representation Learning in Class-Imbalanced Data</h2><p>本文的贡献是用InfoGAN实现对类不平衡数据的解耦。</p>
-<p>InfoGAN假设数据服从均匀分布，因此在类别不平衡的数据中解耦表现较差：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.1.jpg" alt=""></p>
-<p>这篇文章针对这一问题对InfoGAN做了两个改进，其一是不对数据分布进行假设，而将其视为优化过程中的可学习参数，为了实现这一点，采用Gumbel-Softmax分布作为噪声的潜在分布，该分布有可微参数，因此可以进行更新；其二是通过实验发现InfoGAN在类不平衡信息中很容易学到图像的低级特征（与之前分享的解释对比学习工作的发现有异曲同工之妙），因此这篇文章引入对比学习的思想，对数据进行增强，强迫模型学习身份表示，以抑制类不平衡的影响。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.2.jpg" alt=""></p>
-<p>整篇文章的工作重点就是上述的两个方面，其一，用可学习分布代替InfoGAN假设的均匀分布，优化InfoGAN的同时更新分布（左图）。k维类别潜码的采样方法如下：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.3.jpg" alt=""></p>
-<p>$g_i$代表从Gumbel（0，1）分布采样的样本点，温度参数代表不同类之间的相似程度，假如温度参数很小，将会趋近于onn-hot编码（均匀分布）。</p>
-<p>其二，使用简单数据增强方法给数据构造一个正对，同时引入负对，添加一个对比损失项，强迫模型学习身份表示。使用的是常规的对比损失：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.4.jpg" alt=""></p>
-<p>最终的损失为InfoLoss和对比损失之和：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.5.jpg" alt=""></p>
-<p>定性实验结果：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.6.jpg" alt=""></p>
-<p>定量实验结果：</p>
-<p>使用NMI和ENT（平均熵，评价同一个潜码生成的图像是否属于同一类；每一个潜码是否只与一个真实类别标签关联；越小越好）作为评价指标：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/3.7.jpg" alt=""></p>
-<h2 id="4-WAE模型"><a href="#4-WAE模型" class="headerlink" title="4 WAE模型"></a>4 WAE模型</h2><p>ICLR2021中有两篇论文在WAE（WASSERSTEIN AUTOENCODER）的框架下进行解耦图像生成，WAE是2018年由Google在WGAN的基础上提出来的一种自编码器模型，由于目前没有了解其原理，因此只对这两篇论文在WAE基础上的改进进行简单的介绍。</p>
-<h3 id="4-1-Learning-disentangled-representations-with-the-Wasserstein-Autoencoder"><a href="#4-1-Learning-disentangled-representations-with-the-Wasserstein-Autoencoder" class="headerlink" title="4.1 Learning  disentangled representations with the Wasserstein Autoencoder"></a>4.1 Learning  disentangled representations with the Wasserstein Autoencoder</h3><p>想法是把β-TCVAE的构造移植到WAE模型中，重点在于利用TCVAE的loss对WAE进行改进：</p>
-<p>TCWAE loss：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.1.jpg" alt=""></p>
-<p>β-TCVAE loss：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.2.jpg" alt=""></p>
-<p>对比两项损失，可以发现TCWAE具有与β-TCVAE几乎相同的loss函数，区别在于没有最后一个互信息项，以及在第一项的度量上有所差异。</p>
-<p>效果：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.3.jpg" alt=""></p>
-<h3 id="4-2-DISENTANGLED-RECURRENT-WASSERSTEIN-AUTOENCODER"><a href="#4-2-DISENTANGLED-RECURRENT-WASSERSTEIN-AUTOENCODER" class="headerlink" title="4.2 DISENTANGLED RECURRENT WASSERSTEIN AUTOENCODER"></a>4.2 DISENTANGLED RECURRENT WASSERSTEIN AUTOENCODER</h3><p>第二篇WAE相关的文章是将WAE应用于时序图像解耦的工作，用来捕捉时序图像上的相关信息，实现静态因子和动态因子的解耦。</p>
-<p><img src="" alt=""><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/%E5%9B%9B%E7%AF%87%E5%9B%BE%E5%83%8F%E8%A7%A3%E8%80%A6%E7%9B%B8%E5%85%B3%E5%B7%A5%E4%BD%9C%E7%AE%80%E8%A6%81%E4%BB%8B%E7%BB%8D/4.4.jpg" alt="4.4" style="zoom:67%;" /></p>
-<p>上图是这篇文章提出了来的模型的解耦效果，每一行都代表一个时序（对应不同表情）。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="缓缓行舟">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/09/14/SimCLR%EF%BC%9A%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6/" itemprop="url">SimCLR：用于视觉表征的对比学习框架</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-09-14T13:27:16+08:00">
-                2020-09-14
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>论文链接: <a target="_blank" rel="noopener" href="https://arxiv.org/pdf/2002.05709.pdf">https://arxiv.org/pdf/2002.05709.pdf</a></p>
-<p>官方github链接: <a target="_blank" rel="noopener" href="https://github.com/google-research/simclr">https://github.com/google-research/simclr</a></p>
-<p>他人复现pytorch链接: <a target="_blank" rel="noopener" href="https://github.com/sthalles/SimCLR">https://github.com/sthalles/SimCLR</a> </p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/0.gif" style="zoom:67%;" /></p>
-<h2 id="1-概况"><a href="#1-概况" class="headerlink" title="1 概况"></a>1 概况</h2><p><strong>核心观点：</strong></p>
-<ol>
-<li>数据增强(data augmentations)的组合对预测任务的表现有重要影响，对于非监督学习而言，数据增强的提升作用更大；</li>
-<li>本文定义了一个对比损失和表征之间的可学习非线性转换，大幅提高了表征的质量；</li>
-<li>具有对比交叉熵损失(contrastive cross entropy loss)的表征学习得益于归一化嵌入和适当地调整温度参数；</li>
-<li>与监督学习相比，对比学习可以通过更多的训练和更大的Batch Size 获得更好的表现，更深更宽的网络对对比学习表现的提升也有益。</li>
-</ol>
-<p><strong>框架效果：</strong></p>
-<ol>
-<li><p>在对Image Net 进行分类实验时，在top-1精度上取得了76.5%的结果，获比之前最先进的无监督或半监督提升7%，与有监督的Res-Net-50性能相媲美；</p>
-</li>
-<li><p>对Image Net 1%的Label 进行微调时，SimCLR 实现了85.8%的top-5精度，相对性能提升10%,超越了100× fewer label的AlexNet；</p>
-</li>
-<li><p>在其他自然图像分类数据集上进行微调时，SimCLR 在12个数据集中的10个数据集上的表现相当于或优于强监督的Baseline。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/1.png" alt="ImageNet Top-1精度表现" style="zoom: 67%;" /></p>
-</li>
-</ol>
-<h2 id="2-方法"><a href="#2-方法" class="headerlink" title="2 方法"></a>2 方法</h2><h3 id="2-1-对比学习框架"><a href="#2-1-对比学习框架" class="headerlink" title="2.1 对比学习框架"></a>2.1 对比学习框架</h3><p>SimCLR 通过潜在空间上的对比损失，最大化相同数据示例的不同增强视图之间的协议进行表征学习，主要由四个主要组件组成：</p>
-<ol>
-<li><p><strong>随机数据增强模块</strong></p>
-<p>将任意给定的数据示例随即转换为同一示例的两个相关视图，用$\widetilde{x}_i$和$\widetilde{x}_j$表示，将其视为一个正对。本文使用了三种方法进行数据增强：<strong>随即裁剪和调整（如随机翻转）</strong>（裁剪后调整图像尺寸为原图大小），<strong>随机色彩失真</strong>和<strong>随机高斯模糊</strong>，作者认为随即裁剪和色彩失真的结合是使网络具有良好性能的关键。</p>
-</li>
-<li><p><strong>神经网络基编码器(base encoder)</strong></p>
-<p>基编码器定义为$f(·)$，其作用在于从增强后的数据集中提取表征向量。作者认为SimCLR可以在无任何约束的情况下选择各种网络架构的基编码器，论文中选择的是常见的ResNet。因此，对于数据$\widetilde{x}_i$，有：</p>
-<script type="math/tex; mode=display">
-\boldsymbol{h}_i=f(\widetilde{x}_i)=ResNet(\widetilde{x}_i)</script><p>其中，$\boldsymbol{h}_i\in\R^d$，为经过平均池化层之后的输出。</p>
-</li>
-<li><p><strong>小型神经网络投影头(projection head)</strong></p>
-<p>投影头$g(·)$的作用是将编码后的表征$h_i$映射到应用对比损失的潜在空间中，本文使用的是一个两层MLP，具体计算方法如下：</p>
-<script type="math/tex; mode=display">
-z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函数，用$z_i$比$\boldsymbol{h}_i$更好构造对比损失。</p>
-</li>
-<li><p><strong>对比损失函数</strong></p>
-<p>在对比任务中，倘若给定一个包含正对$\widetilde{x}_i$和$\widetilde{x}_j$的数据集$\left\{\widetilde{x}_k\right\}$，重构损失的作用是从$\left\{\widetilde{x}_k\right\}_{k{\neq}i}$中找出给定$\widetilde{x}_i$对应的正对$\widetilde{x}_j$。</p>
-</li>
-</ol>
-<p>因此，整个SimCLR的结构如下：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/2.png" alt="SimCLR对比学习框架结构图" style="zoom:67%;" /></p>
-<ol>
-<li><p><strong>样本构造：</strong></p>
-<p>对于预测任务，随机采样一小批($N$个))数据样本，之后采用数据增强方法，将每一个样本进行扩充，一共得到$2N$个数据点，即$N$个正对。在本文中，不直接构造负对，而是对于给定的正对$\left\{\widetilde{x}_i, \widetilde{x}_j\right\}$，将除该样本对以外的其他$2(N-1)$个样本示例都视为负样本。</p>
-</li>
-<li><p><strong>损失函数构造：</strong></p>
-<p>本文的对比损失函数基于$l_2$正则化，是从其他论文中参考得到的，称我为NT-Xent(标准化温度尺度的交叉熵损失)。该loss首先定义了一个sim函数表示正则化：$\rm{sim}(\boldsymbol{u},\boldsymbol{v})={\boldsymbol{u}^\mathsf{T}}\boldsymbol{v}/|\boldsymbol{u}||\boldsymbol{v}|$，正对$\left\{\widetilde{x}_i, \widetilde{x}_j\right\}$之间的损失函数即为：</p>
-<script type="math/tex; mode=display">
-\ell_{i,j}=-\log\frac{\exp(\rm{sim}(\it{z_i},z_j\rm)/\tau)}{\sum_{k=1}^{2N}{\mathbb{l}_{[k{\neq}i] }\exp(\rm{sim}(\it{z_i},z_j\rm)/\tau)} }</script><p>上式中，$\mathbb{l}_{[k{\neq}i]}$是一个指示函数，当且仅当$k=i$时取0，否则为1。$\tau$是进行优化的温度参数，后续实验显示为0.1时效果最好。</p>
-</li>
-<li><p><strong>算法概述</strong></p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.png" alt="SimCLR框架算法" style="zoom:80%;" /></p>
-<p>根据算法可以发现，在构造数据时，对$\widetilde{x}_i$与$\widetilde{x}_j$分别采用一种增强方法，并且分别计算了一个正对中每个数据点对另一种增强方法所有数据的余弦相似性。</p>
-</li>
-</ol>
-<h3 id="2-2-大Batch-Size训练方法"><a href="#2-2-大Batch-Size训练方法" class="headerlink" title="2.2 大Batch Size训练方法"></a>2.2 大Batch Size训练方法</h3><p>作者提到，为了保持框架的简单化，在模型训练时不采用记忆库训练模型，而是采用大Batch Size的形式，将Batch Size从256扩大为<strong>8192</strong>，在进行数据增强之后，一个正对将有$（8192-1）×2=16382$个负示例。为了克服大Batch Size使用SGD/Momentum进行优化时可能导致的训练不稳定问题，论文对每个Batch Size都采用了<strong>LARS</strong>优化器。</p>
-<p>此外，由于标准ResNet架构采用Batch Normlization(BN)进行规范化，作者指出，在具有数据并行性的分布式训练中，BN的均值和方差通常在每张卡上进行局部的聚合。而论文提出的对比学习中，正对在同一张卡中计算，模型可以利用局部信息泄漏提高预测精度，而不需要改善表征，他们在训练过程中使用了一种<strong>Global BN</strong>的方法，取所有卡上BN的均值和方差作为表示。</p>
-<h3 id="2-3-评价方案"><a href="#2-3-评价方案" class="headerlink" title="2.3 评价方案"></a>2.3 评价方案</h3><ol>
-<li><p><strong>数据集选择</strong></p>
-<p>大部分实验都在<strong>ImageNet ILSVRC-2012</strong> 数据集上进行；少部分实验在<strong>CIFAR-10</strong>上进行；还使用了一些广泛用于<strong>迁移学习</strong>的数据。</p>
-<p>使用线性评估协议进行评估，在一个冻结基网络的顶层训练一个线性分类器，测试分类精度，也比较了一些迁移学习和半监督方法。</p>
-</li>
-<li><p><strong>默认设置</strong></p>
-<p>除非另有规定：</p>
-<p>在数据增强时使用<strong>随机裁剪和调整(随机翻转)</strong>，<strong>颜色失真</strong>，和<strong>高斯模糊</strong>三种方法。</p>
-<p>使用<strong>ResNet-50</strong>作为基础网络编码器,并使用两层MLP将编码后的表征投影到一个128维的潜在空间之中。</p>
-<p>训练时，使用<strong>NT-Xent</strong> loss，使用<strong>LARS</strong>进行优化，设置学习率为$4.8 (= 0.3×Batch Size/256)$，权值衰减率为$10^{-6}$。Batch Size大小为4096，共训练100个epoch。此外，在前10个epoch使用线性预热，并在不重新启动的情况下使用余弦衰减计划衰减学习速率。</p>
-</li>
-</ol>
-<h2 id="3-数据增强"><a href="#3-数据增强" class="headerlink" title="3 数据增强"></a>3 数据增强</h2><h3 id="3-1-数据增强涵盖了对比预测任务的两种情况"><a href="#3-1-数据增强涵盖了对比预测任务的两种情况" class="headerlink" title="3.1 数据增强涵盖了对比预测任务的两种情况"></a>3.1 数据增强涵盖了对比预测任务的两种情况</h3><p>作者指出，目前数据增强方法尚未被视为对比预测任务的标准手段之一，目前流行的手段都是通过改变网络架构实现对比预测，作者认为他们的数据增强方法可以在数据层面即涵盖两种典型的对比预测任务，分别是<strong>整体——局部预测</strong>和<strong>邻近预测</strong>。</p>
-<p>具体来说，如下图所示，在对图像应用随机裁剪时，将会出现如下图左右两张图的正对样本，这些样本包含了上述的两种对比预测任务情形（A, B: 整体——局部；C, D: 临近）。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/4.png" alt="图像增强在对比预测上的应用" style="zoom:67%;" /></p>
-<h3 id="3-2-不同数据增强方式的组合对表征学习效果至关重要"><a href="#3-2-不同数据增强方式的组合对表征学习效果至关重要" class="headerlink" title="3.2 不同数据增强方式的组合对表征学习效果至关重要"></a>3.2 不同数据增强方式的组合对表征学习效果至关重要</h3><p>作者通过下图展示了多种数据增强的方法，需要注意的是，在实验中，其只使用了随即裁剪（包括裁剪、大小调整和翻转）、颜色失真和高斯模糊三种手段。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.png" alt="数据增强手段举例"></p>
-<p>在实验过程中，作者通过研究单独和成对数据增强方法对SimCLR框架性能的影响。由于ImageNet数据库中的图像大小并不一致，在使用数据时通常已经进行了图像裁剪和调整操作，由于很难剔除随机裁剪的影响，因此作者通过不对称转换改善这一情况。</p>
-<p>具体来说，首先对数据样本次啊用随机裁剪，并将其调整到相同的分辨率大小，之后对一个框架的两个分支中的一个应用目标转换$t(·)$，而另一个分支作为标志，即令：$t(x_i)=x_i$。</p>
-<p>作者认为这种非对称数据的增加会对框架性能产生影响，但不应该在实质上改变单个数据增强或组合数据增强方法的影响。</p>
-<p>作者测评了不同方法和组合方法的top-1识别结果，如下图所示。可以发现，单一数据增强方法都不足以学到良好的表征，即使模型可以识别出任务中的正对，组合增强方法会增大预测难度，但是能够显著提升表征质量，最后作者发现，随机裁剪和颜色失真的组合最有利于学习表征。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/6.png" alt="数据增强方法对表征学习的影响"></p>
-<h3 id="3-3-对比学习比监督学习更需要数据增强"><a href="#3-3-对比学习比监督学习更需要数据增强" class="headerlink" title="3.3 对比学习比监督学习更需要数据增强"></a>3.3 对比学习比监督学习更需要数据增强</h3><p>作者调整了颜色增强的强度，发现颜色增强大大提升了SimCLR的线性评估结果。而监督学习使用更加复杂的自动增强方法时，表征学习的表现也没有比简单的裁剪+颜色失真效果好，不同的颜色增强强度也没有提升或削弱监督学习的表现。因此作者认为对比学习比监督学习可以从颜色增强中获得更大收益。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/7.png" alt="颜色增强对不同监督模型的增益" style="zoom:67%;" /></p>
-<h2 id="4-Encoder-和Head-的架构"><a href="#4-Encoder-和Head-的架构" class="headerlink" title="4 Encoder 和Head 的架构"></a>4 Encoder 和Head 的架构</h2><h3 id="4-1-更大的模型使无监督对比模型表现更好"><a href="#4-1-更大的模型使无监督对比模型表现更好" class="headerlink" title="4.1 更大的模型使无监督对比模型表现更好"></a>4.1 更大的模型使无监督对比模型表现更好</h3><p>下图中绿色“×”是有监督ResNet 训练90个epoch的结果，红色“★”是本文模型训练100个epoch的及如果，蓝色“·”是本文模型训练100个epoch的结果，可以发现，随着网络参数的增加，有监督和无监督模型的表现都有所提升，但无监督模型的提升更大。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/8.png" alt="网络参数数量对表征识别的影响" style="zoom:67%;" /></p>
-<h3 id="4-2-非线性投影head有助于提升其之前网络层的表征质量"><a href="#4-2-非线性投影head有助于提升其之前网络层的表征质量" class="headerlink" title="4.2 非线性投影head有助于提升其之前网络层的表征质量"></a>4.2 非线性投影head有助于提升其之前网络层的表征质量</h3><p>非线性投影head，即前文提到的$g(\boldsymbol{h})$，本文对比了包括非线性投影、线性投影以及无投影在内的三种映射方式对表征质量的影响，如下图所示。最终发现非线性投影的Top-1精度比无映射提升10%以上，比线性投影提升3%，并且这一结果在只使用一个head时不受输出维度的影响。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/9.png" alt="不同映射方式对表征质量的影响" style="zoom: 80%;" /></p>
-<p>此外，作者提到使用非线性投影时，head前面的隐藏层也可以学到更好的表征。</p>
-<p>同时，作者通过对使用非线性投影后的映射$z$ 以及非线性投影之前的映射$\boldsymbol{h}$对不同表征的预测表现进行对比，发现$z$ 比$\boldsymbol{h}$保留了更少的信息，具体如下表所示。作者认为是因为$z$删除了一些颜色之类的信息，使得在训练过程中这些信息更多在$\boldsymbol{h}$阶段形成。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/10.png" alt="不同方法保留信息的大小" style="zoom:67%;" /></p>
-<h2 id="5-损失函数和Batch-Size"><a href="#5-损失函数和Batch-Size" class="headerlink" title="5 损失函数和Batch Size"></a>5 损失函数和Batch Size</h2><h3 id="5-1-带有可调温度参数的归一化交叉熵损失是更优选择"><a href="#5-1-带有可调温度参数的归一化交叉熵损失是更优选择" class="headerlink" title="5.1 带有可调温度参数的归一化交叉熵损失是更优选择"></a>5.1 带有可调温度参数的归一化交叉熵损失是更优选择</h3><p>作者对比了本文使用的NT-Xent损失和下表中另外两种对比损失应用于此框架的表现。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/11.png" alt="不同loss表达式" style="zoom:67%;" /></p>
-<p>作者认为NT-Xent损失中的温度参数可以帮助模型从hard-negative中学习，而其他损失函数没有这个特点，必须引入额外的semi-hard-negative进行挖掘，在均使用l2正则化（余弦相似性）时，发现即使是用了semi-hard-negative的其他loss，表现也不如NT-Xent。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/12.png" alt="不同loss表现对比" style="zoom:67%;" /></p>
-<p>在此基础上，作者又测试了使用l2正则化和只使用点积的情况以及不同温度参数对对比任务精度和通过Top-1预测的表征表现情况，发现不使用l2正则化会提升对比任务精度，但是降低了表征的线性评估结果。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/13.png" alt="l2正则化和温度参数影响探究" style="zoom:67%;" /></p>
-<h3 id="5-2-大Batch-Size和更多训练对对比学习更有益"><a href="#5-2-大Batch-Size和更多训练对对比学习更有益" class="headerlink" title="5.2 大Batch Size和更多训练对对比学习更有益"></a>5.2 大Batch Size和更多训练对对比学习更有益</h3><p>作者通过实验发现，大Batch Size 和大epoch 对框架的表现具有提升，因为增大这两者会提供更多的负例。不过随着epoch的增加，不同Batch Size效果之间的差异在减小。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/14.png" alt="不同epoch与batch size的影响" style="zoom:67%;" /></p>
-<h2 id="6-实验对比"><a href="#6-实验对比" class="headerlink" title="6 实验对比"></a>6 实验对比</h2><h3 id="6-1-线性评估"><a href="#6-1-线性评估" class="headerlink" title="6.1 线性评估"></a>6.1 线性评估</h3><p>这部分实验用预训练好的一些无监督模型训练了一个线性分类器，评估在ImageNet上的效果，可以发现，SimCLR的Top-1和Top-5表现都很优秀，当加深网络时，无监督模型的表现普遍提升（括号中的(4×)的意思是网络宽度是原网络的4倍）。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/15.png" alt="线性评估" style="zoom:80%;" /></p>
-<h3 id="6-2-半监督学习"><a href="#6-2-半监督学习" class="headerlink" title="6.2 半监督学习"></a>6.2 半监督学习</h3><p>对ImageNet采样1%和10%有标签的训练集（分别是12.8张与128张图片一个类）进行微调，比较不同网络的效果。</p>
-<p>微调过程使用名为Nesterov动量优化器进行调整，对于1%标记的数据，对60个epoch进行微调，对于10%标签的数据，对30个epoch进行微调，同时调整图像大小为256×256，之后在中央应用裁剪，裁剪到224×224的大小。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/16.png" alt="半监督学习" style="zoom: 80%;" /></p>
-<h3 id="6-3-迁移学习"><a href="#6-3-迁移学习" class="headerlink" title="6.3 迁移学习"></a>6.3 迁移学习</h3><p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/%E3%80%8ASimCLR%E7%94%A8%E4%BA%8E%E8%A7%86%E8%A7%89%E8%A1%A8%E5%BE%81%E7%9A%84%E5%AF%B9%E6%AF%94%E5%AD%A6%E4%B9%A0%E6%A1%86%E6%9E%B6%E3%80%8B%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/17.png" alt="迁移学习" style="zoom:67%;" /></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
+  <nav class="pagination">
+    <span class="page-number current">1</span><a class="page-number" href="/page/2/">2</a><a class="extend next" rel="next" href="/page/2/">&lt;i class&#x3D;&quot;fa fa-angle-right&quot;&gt;&lt;&#x2F;i&gt;</a>
+  </nav>
+
 
 
           </div>
@@ -2140,7 +2131,7 @@ z_i=g(h_i)=W^{(2)}(\sigma(W^{(1)}(h_i)))</script><p>其中，$\sigma$是ReLU 函
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">10</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

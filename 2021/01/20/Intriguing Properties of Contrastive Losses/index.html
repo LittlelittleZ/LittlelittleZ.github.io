@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next pisces use-motion" lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="Hexo, NexT" />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="Intriguing Properties of Contrastive Losses题目：对比损失的有趣特性 1. 概要1) 本文对目前广泛使用的标准对比损失进行了推广，并研究了广义对比损失在参数和数据分布上的一些性质。 2) 本文通过实验发现，对比损失倾向于学习简单特征，并且少量简单特征即可压制甚至完全消除图像更为复杂且本质的特征的作用，进而影响模型表现。 2. 广义对比损失2.1 广义对比损">
+<meta property="og:type" content="article">
+<meta property="og:title" content="《Intriguing Properties of Contrastive Losses》阅读笔记">
+<meta property="og:url" content="http://example.com/2021/01/20/Intriguing%20Properties%20of%20Contrastive%20Losses/index.html">
+<meta property="og:site_name" content="缓缓行舟">
+<meta property="og:description" content="Intriguing Properties of Contrastive Losses题目：对比损失的有趣特性 1. 概要1) 本文对目前广泛使用的标准对比损失进行了推广，并研究了广义对比损失在参数和数据分布上的一些性质。 2) 本文通过实验发现，对比损失倾向于学习简单特征，并且少量简单特征即可压制甚至完全消除图像更为复杂且本质的特征的作用，进而影响模型表现。 2. 广义对比损失2.1 广义对比损">
+<meta property="og:locale">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.1.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.2.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.3.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.4.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.5.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.6.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.7.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.8.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.9.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.13.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.10.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.11.jpg">
+<meta property="og:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.12.jpg">
+<meta property="article:published_time" content="2021-01-20T07:10:23.770Z">
+<meta property="article:modified_time" content="2021-01-20T07:10:59.744Z">
+<meta property="article:author" content="微澜">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.1.jpg">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '',
+    scheme: 'Pisces',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: '博主'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://example.com/2021/01/20/Intriguing Properties of Contrastive Losses/"/>
+
+
+
+
+
+  <title>《Intriguing Properties of Contrastive Losses》阅读笔记 | 缓缓行舟</title>
+  
+
+
+
+
+
+
+
+
+<!-- hexo injector head_end start -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/hexo-math@4.0.0/dist/style.css">
+<!-- hexo injector head_end end --><meta name="generator" content="Hexo 5.3.0"></head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="zh-Hans">
+
+  
+  
+    
+  
+
+  <div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">缓缓行舟</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle">给行船途中的所感所获一个容身之处</p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            首页
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/%20" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            归档
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/20/Intriguing%20Properties%20of%20Contrastive%20Losses/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">《Intriguing Properties of Contrastive Losses》阅读笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-01-20T15:10:23+08:00">
+                2021-01-20
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="Intriguing-Properties-of-Contrastive-Losses"><a href="#Intriguing-Properties-of-Contrastive-Losses" class="headerlink" title="Intriguing Properties of Contrastive Losses"></a>Intriguing Properties of Contrastive Losses</h1><p><strong>题目</strong>：对比损失的有趣特性</p>
+<h2 id="1-概要"><a href="#1-概要" class="headerlink" title="1. 概要"></a>1. 概要</h2><p>1) 本文对目前广泛使用的标准对比损失进行了推广，并研究了广义对比损失在参数和数据分布上的一些性质。</p>
+<p>2) 本文通过实验发现，对比损失倾向于学习简单特征，并且少量简单特征即可压制甚至完全消除图像更为复杂且本质的特征的作用，进而影响模型表现。</p>
+<h2 id="2-广义对比损失"><a href="#2-广义对比损失" class="headerlink" title="2. 广义对比损失"></a>2. 广义对比损失</h2><h3 id="2-1-广义对比损失的定义"><a href="#2-1-广义对比损失的定义" class="headerlink" title="2.1 广义对比损失的定义"></a>2.1 广义对比损失的定义</h3><p>本文在目前广泛使用的对比损失的基础之上，提出了广义对比损失的表达形式，并研究了其中的一些性质。</p>
+<p>作者提出了一种广义对比损失的表达形式如下:</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{\mathrm{generalized\ contrastive}}=\mathcal{L}_{\mathrm{alignment}}+λ\mathcal{L}_{\mathrm{distribution}}</script><p>第一项为<strong>$\mathcal{L}_{\mathrm{alignment}}$，其作用是拉近正对之间的距离</strong>；第二项为$\mathcal{L}_{\mathrm{distribution}}$<strong>，作用是让负样本服从于给定的先验分布</strong>。</p>
+<h3 id="2-2-标准对比损失是广义对比损失的一个特例"><a href="#2-2-标准对比损失是广义对比损失的一个特例" class="headerlink" title="2.2 标准对比损失是广义对比损失的一个特例"></a>2.2 标准对比损失是广义对比损失的一个特例</h3><p>那么，我们常用的交叉熵损失是否符合上述表达式呢？</p>
+<p>一个标准的基于交叉熵的对比损失表达式如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.1.jpg" style="zoom:67%;" /></p>
+<p>其中，$\mathrm{sim}$代表余弦相似度。</p>
+<p>将对数项进行分解，转化为如下形式：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.2.jpg" style="zoom:67%;" /></p>
+<p>上式第一项的作用非常明确，即拉近正对之间的相似性，最小化第二项的作用是拉远负样本与负样本之间的距离，最终将使得隐藏表征$z$趋近于超球面中的均匀分布，因此可以视为是一种分布匹配损失。因此，基于交叉熵的标准对比损失属于广义对比损失的一个特例，最终将使负样本趋近于均匀分布。</p>
+<p>在上式右侧，温度参数$τ$出现在第二项的两个地方，其中一个代表的是$\mathcal{L}_{\mathrm{distribution}}$的权重，另一处代表的是高斯核的宽度，作者认为这两处的值不一定非要相等，可以解耦，用$λ$表示代表权值的一处，得到$τ$解耦的广义交叉熵对比损失：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.3.jpg" style="zoom:67%;" /></p>
+<p><strong>温度参数$τ$和尺度参数$λ$的关系：</strong></p>
+<p>解耦之后的标准交叉熵损失具有两个可调参数$τ$和$λ$，作者研究了设置不同值的情况下，二者对用标准对比损失所训练出来的分类模型线性评估结果的影响：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.4.jpg" alt=""></p>
+<p>从上图中可以发现，$τ$和$λ$对线性评估结果呈现负相关关系，在设置参数时应从左下和右上端取值。</p>
+<h3 id="2-3-广义对比损失和互信息的关系"><a href="#2-3-广义对比损失和互信息的关系" class="headerlink" title="2.3 广义对比损失和互信息的关系"></a>2.3 广义对比损失和互信息的关系</h3><p>有研究已经证明，基于交叉熵的标准对比损失是互信息的一个下界，本文认为广义对比损失与互信息仍然保持这种关系。</p>
+<p>两个潜在变量$U$与$V$的互信息可以写为：</p>
+<script type="math/tex; mode=display">
+I(U;V)=H(U)-H(U|V)</script><p>将其与广义对比损失相比较：</p>
+<script type="math/tex; mode=display">
+\mathcal{L}_{\mathrm{generalized\ contrastive}}=\mathcal{L}_{\mathrm{alignment}}+λ\mathcal{L}_{\mathrm{distribution}}</script><p>$\mathcal{L}_{\mathrm{alignment}}$的作用在于拉近正类内部的相似性，即减少不同类之间的不确定性，与互信息中的第二项相对应，而</p>
+<p>$\mathcal{L}_{\mathrm{distribution}}$的作用在于尽量使负类之间趋近于先验分布，这一损失将会尽量使得样本的熵最大，故而可以看作$H(U)$在表征中的代理，当先验分布是均匀分布时，熵最大。不过广义对比损失比互信息在第二项多了一个可调参数$λ$。</p>
+<h3 id="2-4-使用不同先验分布对对比损失表现的影响"><a href="#2-4-使用不同先验分布对对比损失表现的影响" class="headerlink" title="2.4 使用不同先验分布对对比损失表现的影响"></a>2.4 使用不同先验分布对对比损失表现的影响</h3><p>标准正态分布使用的是交叉熵损失，使得$\mathcal{L}_{\mathrm{distribution}}$趋近于超球面上的均匀分布。为了研究其他的先验分布对于对比损失的表现是否有影响，本文根据最优运输理论，构造出了基于Sliced Wasserstein Distance(SWD)距离的均匀超球面(Uniform hypersphere)分布、均匀超立方分布(Uniform hypercube)和高斯分布(Normal distribution):</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.5.jpg" style="zoom:67%;" /></p>
+<p>在使用SWD Loss时，首先根据最优运输算法将样本进行有序排列，对于1维样本直接计算排列后的1维Wasserstein距离，对于n维样本，先将其投影到n个1维正交子空间中，在计算并求和所有子空间的1维Wasserstein距离。（粗略介绍，详细方法可以查看论文）。</p>
+<p>使用最优运输方法构造出符合不同先验分布的SWD Loss之后，评估给出的Loss在Cifar10、ImageNet（线性投影头为2层和3层）下的线性评估结果，如下图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.6.jpg" alt=""></p>
+<p>最终发现，对于CIFAR10，随着epoch的增大，不同先验分布对线性评估影响不大；对于使用2层线性投影头的ImageNet，解耦标准交叉熵损失和服从均匀超球面先验的SWD表现更好一些，但是一旦把线性投影头换成3层的，不同先验分布之间就没有很明显的区别。</p>
+<h2 id="3-特征压制"><a href="#3-特征压制" class="headerlink" title="3. 特征压制"></a>3. 特征压制</h2><p>如下图所示，SimCLR在进行数据增强时发现，相比于裁剪和旋转等不改变图像内容的操作，对图像进行颜色增强会提升模型的表现：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.7.jpg" style="zoom:67%;" /></p>
+<p>这可能说明，在模型利用对比损失学习表征时，可能更倾向于学习图像之间共享的颜色信息，意味着颜色特征压制了其他特征的表现。为了研究这一现象，作者在两个数据集上进行了不同实验进行探究。</p>
+<h3 id="3-1-在DigitOnImageNet-dataset上的实验"><a href="#3-1-在DigitOnImageNet-dataset上的实验" class="headerlink" title="3.1 在DigitOnImageNet dataset上的实验"></a>3.1 在DigitOnImageNet dataset上的实验</h3><p>DigitOnImageNet dataset以ImageNet为基础，给每一张图片添加一个MNIST数据集中的数字，并将这一数字复制到图片中的九个位置，之后使用SimCLR的数据增强方法进行增强，再进行训练。本文认为额外添加的MNIST数字特征与图像原始特征是竞争关系。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.8.jpg" alt=""></p>
+<p>使用batch_size为1024，2层线性投影头的SimCLR模型训练上述数据集，线性评估结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.9.jpg" alt=""></p>
+<p>可以看到，对于有监督学习方法，额外的数字特征没有对分类线性评估结果造成干扰，而对对比学习方法具有较大影响，随着温度参数和添加的数字种类增加，线性评估结果均变差了。由此认为，对比学习学习到了更为简单的数字特征，而没有学习到占大部分的更为复杂的图像特征。</p>
+<h3 id="3-2-在RandBit-dataset数据集上的实验"><a href="#3-2-在RandBit-dataset数据集上的实验" class="headerlink" title="3.2 在RandBit dataset数据集上的实验"></a>3.2 在RandBit dataset数据集上的实验</h3><p>上一个实验说明了简单特征可以抑制复杂特征在对比学习中的影响，在此基础上，作者设计了一种更为极端的数据集进行实验。</p>
+<p>对于一幅RGB图像，先额外从$[1, log_2(n)]$范围中采样一个整数，将其表示为$n$个二进制通道，这意味着给这张图象增加了$n$个通道的数据，之后只对RGB图像部分进行数据增强操作，额外增加的部分不进行数据增强。示意图如下图所示：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.13.jpg" alt=""></p>
+<p>本文构建了基于CIFAR10，MNIST和ImageNet三个数据集的RandBit dataset，使用不同的模型进行分类训练，评估其分类精度：</p>
+<p>在CIFAR10上的表现如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.10.jpg" style="zoom:67%;" /></p>
+<p>在MNIST上的表现如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.11.jpg" style="zoom:67%;" /></p>
+<p>在ImageNet上的表现如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Contrastive%20Learning%E7%9B%B8%E5%85%B3/Intriguing%20Properties%20of%20Contrastive%20Losses/3.12.jpg" style="zoom:67%;" /></p>
+<p>横坐标为$n$的值，可以看出，在三个数据集上，对比学习方法在不同模型上的表现均显著变差，意味着即使是非常少量共享信息（几个比特）的简单特征对对比损失的表现都可能产生主导性影响。</p>
+
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2021/01/19/High-Frequency_Component_Helps_Explain_the_Generalization_of_Convolutional_Neural_Networks/" rel="next" title="《High-Frequency Component...》 阅读笔记">
+                <i class="fa fa-chevron-left"></i> 《High-Frequency Component...》 阅读笔记
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+              <a href="/2021/01/20/Focal%20Loss%20for%20Dense%20Object%20Detection/" rel="prev" title="《Focal Loss for Dense Object Detection》阅读笔记">
+                《Focal Loss for Dense Object Detection》阅读笔记 <i class="fa fa-chevron-right"></i>
+              </a>
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            文章目录
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            站点概览
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name"></p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/%20%7C%7C%20archive">
+              
+                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-name">日志</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+
+          </nav>
+
+          
+
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Intriguing-Properties-of-Contrastive-Losses"><span class="nav-number">1.</span> <span class="nav-text">Intriguing Properties of Contrastive Losses</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#1-%E6%A6%82%E8%A6%81"><span class="nav-number">1.1.</span> <span class="nav-text">1. 概要</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#2-%E5%B9%BF%E4%B9%89%E5%AF%B9%E6%AF%94%E6%8D%9F%E5%A4%B1"><span class="nav-number">1.2.</span> <span class="nav-text">2. 广义对比损失</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#2-1-%E5%B9%BF%E4%B9%89%E5%AF%B9%E6%AF%94%E6%8D%9F%E5%A4%B1%E7%9A%84%E5%AE%9A%E4%B9%89"><span class="nav-number">1.2.1.</span> <span class="nav-text">2.1 广义对比损失的定义</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-2-%E6%A0%87%E5%87%86%E5%AF%B9%E6%AF%94%E6%8D%9F%E5%A4%B1%E6%98%AF%E5%B9%BF%E4%B9%89%E5%AF%B9%E6%AF%94%E6%8D%9F%E5%A4%B1%E7%9A%84%E4%B8%80%E4%B8%AA%E7%89%B9%E4%BE%8B"><span class="nav-number">1.2.2.</span> <span class="nav-text">2.2 标准对比损失是广义对比损失的一个特例</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-3-%E5%B9%BF%E4%B9%89%E5%AF%B9%E6%AF%94%E6%8D%9F%E5%A4%B1%E5%92%8C%E4%BA%92%E4%BF%A1%E6%81%AF%E7%9A%84%E5%85%B3%E7%B3%BB"><span class="nav-number">1.2.3.</span> <span class="nav-text">2.3 广义对比损失和互信息的关系</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-4-%E4%BD%BF%E7%94%A8%E4%B8%8D%E5%90%8C%E5%85%88%E9%AA%8C%E5%88%86%E5%B8%83%E5%AF%B9%E5%AF%B9%E6%AF%94%E6%8D%9F%E5%A4%B1%E8%A1%A8%E7%8E%B0%E7%9A%84%E5%BD%B1%E5%93%8D"><span class="nav-number">1.2.4.</span> <span class="nav-text">2.4 使用不同先验分布对对比损失表现的影响</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#3-%E7%89%B9%E5%BE%81%E5%8E%8B%E5%88%B6"><span class="nav-number">1.3.</span> <span class="nav-text">3. 特征压制</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#3-1-%E5%9C%A8DigitOnImageNet-dataset%E4%B8%8A%E7%9A%84%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.3.1.</span> <span class="nav-text">3.1 在DigitOnImageNet dataset上的实验</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-2-%E5%9C%A8RandBit-dataset%E6%95%B0%E6%8D%AE%E9%9B%86%E4%B8%8A%E7%9A%84%E5%AE%9E%E9%AA%8C"><span class="nav-number">1.3.2.</span> <span class="nav-text">3.2 在RandBit dataset数据集上的实验</span></a></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2021</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">微澜</span>
+
+  
+</div>
+
+
+  <div class="powered-by">由 <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a> 强力驱动</div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">主题 &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Pisces</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.bootcss.com/mathjax/2.7.1/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  
+
+
+  
+
+  
+
+</body>
+</html>
