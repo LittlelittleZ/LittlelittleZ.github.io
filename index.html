@@ -371,7 +371,7 @@
 <p><img src="http://little_z_c.gitee.io/imagebed/%E7%9B%AE%E6%A0%87%E6%A3%80%E6%B5%8B%E7%9B%B8%E5%85%B3/Focal%20Loss%20for%20Dense%20Object%20Detection/2.7.jpg" alt=""></p>
 <p>该网络由一个用来提取特征的Feature Pyramid Network(FPN, 金字塔型主网络和一个分类子网络以及一个边框子网络组成。</p>
 <p>FPN主网络基于ResNet构造，目的是增强CNN的泛化能力，同时可以提取不同尺度的特征。</p>
-<p>分类子网络由四个相同的$3<em>3$卷积层组成，输出一个$W {</em>} H {<em>} 256$的特征，再经过一个$3 {</em>} 3$卷积层输出$W {<em>} H {</em>} KA$的特征，K是目标类别数量，A是网络设计的锚点（候选区域）的数量，最后进行二值分类。</p>
+<p>分类子网络由四个相同的$3<em>3$卷积层组成，输出一个$W {</em>} H {<em>} 256$的特征，再经过一个$3\</em>3$卷积层输出$W {<em>} H {</em>} KA$的特征，K是目标类别数量，A是网络设计的锚点（候选区域）的数量，最后进行二值分类。</p>
 <p>边框子网络和分类子网络结构基本相同，在最后一层的输出以及后续处理上有所差异，其作用是优化输出边框和groundtruch之间的偏移量。</p>
 <p>由于网络不是本文的主要内容，因此不做过多介绍。</p>
 <h2 id="6-Experiment"><a href="#6-Experiment" class="headerlink" title="6. Experiment"></a>6. Experiment</h2><p>本实验基于COCO目标检测数据集。</p>
