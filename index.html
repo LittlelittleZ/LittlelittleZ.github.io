@@ -235,6 +235,171 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://example.com/2021/03/26/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="缓缓行舟">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2021/03/26/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/" itemprop="url">《Deep Quotient Manifold Modeling》阅读笔记</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2021-03-26T18:45:07+08:00">
+                2021-03-26
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>本文考虑了一种多生成器结构的生成式网络模型，思想在于对于存在某一连续流形特征的数据集，可以从连续流形等值线的法线方向挖掘新的流形特征，最终实现解耦，具体实现时，通过<strong>共享每个生成器中所有非线性层参数，以及每一个对应线形层之间的权值参数，再设计了一个针对线形层偏置项切线方向的正则化偏置项</strong>，确保每一个生成器对同一个z生成的映射x可以被逆映射回具有同一个流形特征的数据空间中，但由于偏置的法线方向是各自独立变化的，意味着每个生成器都具有潜力挖掘新流形特征的能力，这也就是其能够实现多模态图像生成的机制所在，个人感觉没有说明为什么不需要对法线方向做任何的约束就可以自动解出想要的模式，这点值得继续探讨。</p>
+<h2 id="1-思想详述"><a href="#1-思想详述" class="headerlink" title="1 思想详述"></a>1 思想详述</h2><p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/1.jpg" alt=""></p>
+<p>对于一个图像数据集，其中包含了多种数据特征，这也意味着每张图像数据或多或少都带有多个属性，比如上图中的五张图像，显而易见地具有猫、椅子、花瓶、以及上述几种特征各自的位置属性及两两之间的相对位置属性，假如要对这样一个数据集进行分析与处理，就需要考虑到每个属性的情况，计算量庞大，且引入新的对照数据也意味着可能会引入新的属性，十分不现实。假如将上面提到的每个属性都视为一个离散数据流形，我们可以从提供的数据中发现一个显而易见的连续流形结构，也就是猫的位置，这是每张图像都具有的共享属性，具体所体现出来的图像无非是这<strong>一流形与其他多个数据流形的组合</strong>，因此，作者提出，假如训练一个编码器编码“猫的位置”这一共享的连续流形特征，那无论对于哪张图像，编码器将会对处于同一位置的图像返回一个共同的编码，如上图中的右图所示，在数据空间中，每一根绿线就代表了猫的位置的等值线，与等值线相切的$M^{(1)}, M^{(2)}$,则代表了与之组合的两种离散特征的变化，假如我们充分挖掘了等值线的信息，当一张具有新的属性（紫色线）的图像进来时，我们可以很容易定位出其属于哪一条等值线。</p>
+<p>那么，对于多生成器生成对抗网络来说，对于输入的<strong>同</strong>一个随机噪声$z$，通过<strong>不同</strong>生成器将其映射到数据空间上的不同位置，假如有一个编码器可以将这些生成器对于同一个$z$生成的不同$x_i$的逆映射返回到同一个编码表示中，则认为这些生成器潜在地提取到了某一个数据流形的特征，这也就意味着这些生成器对于同一个$z$产生的映射在某一个流形上<strong>等价</strong>。这篇文章的核心内容就是如何构造这样的生成器，即这篇文章的思路在于训练生成器在某个维度或流形上的等价性，逆推出没有被挖掘到的属性则存在差异性，最终实现解耦。</p>
+<h2 id="2-商流形模型"><a href="#2-商流形模型" class="headerlink" title="2 商流形模型"></a>2 商流形模型</h2><h3 id="2-1-编码器兼容性（等价性挖掘）"><a href="#2-1-编码器兼容性（等价性挖掘）" class="headerlink" title="2.1 编码器兼容性（等价性挖掘）"></a>2.1 编码器兼容性（等价性挖掘）</h3><p>假定有一个编码器映射$\mathcal{H}: X \rightarrow Z$，假如对于多生成器每个生成器的映射$\left\{f_{G}^{(i)}: Z \rightarrow M^{(i)} \subset X\right\}_{i=1}^{A}$，都有$h_E \in \mathcal{H}$时，满足${(f_{G}^{(i)})^{-1}}(x) = h_E(x)$成立，则意味着这个编码器具有等价性。对于编码器而言，挖掘数据特征是其基本功能，假如图像真的具有某一个共享属性，挖掘出这个属性完全可以实现，而对于图像来说，这意味着由不同生成器生成的图像之间存在一种<strong>等价</strong>关系$x^{(1)} \sim_{h_{E}} x^{(2)} \Longleftrightarrow h_{E}\left(x^{(1)}\right)=h_{E}\left(x^{(2)}\right)$。这就是这篇文章所谓商流形的来源，实际上并没有利用商空间的理论知识辅助计算，而是使用商空间的概念阐明论文的动机和思路。</p>
+<h3 id="2-2-偏置校准正则化"><a href="#2-2-偏置校准正则化" class="headerlink" title="2.2 偏置校准正则化"></a>2.2 偏置校准正则化</h3><p>从上一步我们已经知道，只要生成器能够满足要求，这种挖掘等价关系的编码器是很好找的，但是通常多生成器模型之间只共享部分或者完全不共享参数，这就无法控制不同生成器对同一个$z$的映射可以获得某个潜在特征了，因为彼此都是随机初始化，谁也不知道谁是做什么的（部分参数共享的生成器还是可以做到一些共性挖掘的），为了解决这个问题，作者提出了针对<strong>网络线形层</strong>的偏置校准正则化，来保证生成器生成数据分布之间的等价性。</p>
+<p>考虑一个生成器的映射过程$\left\{f_{G}^{(i)}: Z \rightarrow M^{(i)} \subset X\right\}$，对于一个线性分类器，可以很容易地写出其映射过程的具体表达形式$f_{G}^{(i)}(z):=U^{(i)}z+a^{(i)}$，其中，$U^{(i)} \in \mathbb{R}^{d_x ×d_z}(d_x &gt; d_z)$代表权值，$a^{(i)} \in \mathbb{R}^{d_x}$ 代表偏置项，这里作者做了一个假设，它认为生成器对每个$z$的都会映射到一个独一无二的$x$上，也就是单设关系，因此，权值$U^{(i)}$是满秩的（秩为$d_z$），对于这个假设没有给出理论说明，因此被ICLR审稿人指出来作为论文的不足之处之一。假设暂且按下不表，我们以及知道了映射的表达式，自然就可以写出逆映射的表达式：</p>
+<script type="math/tex; mode=display">
+{(f_{G}^{(i)})}^{-1}:=(U^{(i)})^{+}(x^{(i)} - a^{(i)})</script><p>，这里的$(U^{(i)})^{+}$代表的是$U^{(i)}$的伪逆，计算方法为$(U^{(i)})^{+} :=((U^{(i)})^{\mathrm{T}}U^{(i)})^{-1}(U^{(i)})^{\mathrm{T}}$，概念近似逆运算理解即可，不作过多说明。我们现在希望对于每一个生成器，它们在以相同的$z$为输入时，其输出都能够被编码成同一个形式，即逆映射的结果都相同，那编码器$h_E$对于所有的生成器都会有如下的编码形式：</p>
+<script type="math/tex; mode=display">
+\begin{aligned}
+\left(f_{G}^{(i)}\right)^{-1} &=U^{+} x-U^{+}\left(a_{\|}+a_{\perp}^{(i)}\right)=U^{+} x-U^{+} a_{\|} \\
+&=W^{\top} x+b .
+\end{aligned}</script><p>上面作者将偏置项分解成了切线方向的$a_{|}$和法线方向的$a_{\perp}$两部分，并且当权值乘以法线方向偏置的结果为0，剩下的变量只包括权值$U^+$和切线方向的偏置$a_{|}$，对于权值，作者简单地将所有生成器对应线性层地权值共享满足一致性，对于切线方向的偏置，则通过正则化约束达成一致性条件，这就是本文的核心内容。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/2.jpg" style="zoom:80%;" /></p>
+<p>具体在实现时，以协方差矩阵的迹作为正则化项，即$\operatorname{trace}\left(\operatorname{cov}\left(a_{|}^{(i)}\right)\right)$，由于$a_{|}^{(i)} =U(U^{\mathrm{T}}U)^{-1}U^{\mathrm{T}}$涉及到求逆过程，比较困难，作者找了一个正则化项的上界作为最终的正则化约束项，以避免复杂的求逆运算：</p>
+<script type="math/tex; mode=display">
+\operatorname{trace}\left(\operatorname{cov}\left(U^{\top} a^{(i)}\right)\right) \geq \frac{1}{d_{z}} H\left(\left\{\lambda_{k}\right\}_{k=1}^{d_{z}}\right) \operatorname{trace}\left(\operatorname{cov}\left(a_{\|}^{(i)}\right)\right)</script><p>在此基础上，使用对数函数对这一正则化项进行缩放，得到最终的BA正则化项：</p>
+<script type="math/tex; mode=display">
+R_{BA}=\operatorname{log}\left(\operatorname{trace}\left(\operatorname{cov}\left(U^{\top} a^{(i)}\right)\right)\right)</script><h3 id="2-3-多层网络偏置正则化处理"><a href="#2-3-多层网络偏置正则化处理" class="headerlink" title="2.3 多层网络偏置正则化处理"></a>2.3 多层网络偏置正则化处理</h3><p>对于多层网络，往往含有BN、激活函数、卷积层等非线性层，同时可能含有不止一个线性层，针对这种情况，作者令，每个生成器具有完全相同的网络结构，共享非线性层的所有参数，对于线性层，每一对应层之间共享权值参数，并分别使用BA正则化约束使偏置项的切向方向尽可能相等。</p>
+<h2 id="3-深度商生成模型"><a href="#3-深度商生成模型" class="headerlink" title="3 深度商生成模型"></a>3 深度商生成模型</h2><p>本文的目标在于解耦，上面的步骤提出了构造具有某种等价关系的多个生成器的正则化方法，每个生成器大部分参数都是相同的，只有线性层偏置的法线方向保持了独立性，回到最开始那张图，每条绿色的等值线即代表了由一个$z$所映射得到的具有某种等价关系的数据分布，通过偏置法线方向的变异，找到多条与等值线相切的数据流形，也就是多个模态的体现。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/1.jpg" alt=""></p>
+<p>在这里，作者又做了一个假设，即对于想要解耦的模态，每个模态出现的概率都是$1/A$，这里$A$是生成器的个数。$z$的处理与传统GAN网络何VAE相同，都是从某一分布中采样得到的。</p>
+<p>需要注意的时，在训练GAN和VAE时，实际上不需要用到一个实体的编码器$h_E$，只是为了辅助说明使用，不过作者也给出了这样的编码器的损失函数:</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/10.jpg" style="zoom: 80%;" /></p>
+<h3 id="3-1-Q-WGAN"><a href="#3-1-Q-WGAN" class="headerlink" title="3.1 Q-WGAN"></a>3.1 Q-WGAN</h3><p>对于GAN网络模型，作者基于DC-GAN架构的WGAN网络进行设计，生成器与鉴别器损失与传统无异，不够生成器上，加了每一个线性层的正则化项：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/5.jpg" style="zoom:80%;" /></p>
+<p>上式中的$\lambda$是权重系数。</p>
+<p>对于鉴别器，本文使用谱归一化作为满足Lipschitz连续的方法。</p>
+<h3 id="3-2-Q-beta-VAE"><a href="#3-2-Q-beta-VAE" class="headerlink" title="3.2 Q-$\beta$-VAE"></a>3.2 Q-$\beta$-VAE</h3><p>对于VAE模型，也采用EM算法进行训练，损失函数也是直接增加了一个正则项</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/6.jpg" style="zoom:80%;" /></p>
+<h2 id="4-实验"><a href="#4-实验" class="headerlink" title="4 实验"></a>4 实验</h2><p>本文在MNIST、3D-Chair和UT-Zap50k三个数据库上进行了实验，生成器数量分别是10，20，4。所有图像都被缩放到32*32大小。</p>
+<p>评价指标为FID和本文提出来的Disentangle Score。</p>
+<h3 id="4-1-Disentangle-Score"><a href="#4-1-Disentangle-Score" class="headerlink" title="4.1 Disentangle Score"></a>4.1 Disentangle Score</h3><p>这里的Disentangle Score，首先获取真实图像数据集中的500张图像，然后根据模型生成的结果，人工选择了一个子流形特征（比如数字类型、数字粗细、倾斜度等等），分别给这500张图像设置11组不同的值（比如不同的倾斜度），一共得到5500张共11组图像，送进训练好的编码器之中，返回11组潜码，取这11组潜码组内的均值作为这一组的典型值，接着，利用潜码和图像进行主成分分析，作者认为，如果图像被很好地解开，主成分分析后的维度应该尽量接近1（个人感觉是图像通过很简单的变换即能够对应到潜码上），因此，作者计算主成分分析的协方差矩阵第一个特征值与第二个特征值的比值，比值越大则意味着解耦效果越好。</p>
+<h3 id="4-2-定性评价结果"><a href="#4-2-定性评价结果" class="headerlink" title="4.2 定性评价结果"></a>4.2 定性评价结果</h3><p>作者给出了三个数据集上的图像生成结果，图中每一列代表同一个$z$每一行代表不同生成器的生成结果，MNIST上第一组是VAE的结果，第二组是GAN的结果。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/7.jpg" style="zoom:80%;" /></p>
+<p>可以看到确实存在解耦效果，但是有些模态并没有完全解开。</p>
+<p>作者还进行了一些其他维度的解耦实验：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/8.jpg" style="zoom:80%;" /></p>
+<p>对于上面那张图，明显看出实现了效果较好的连续变换能力，但是每一行代表的还是同一个生成器生成的结果，说明生成器解到的还是类别特征，那是如何通过变换$z$来实现连续特征解耦的，论文里没有明确说明，感觉存在疑问。</p>
+<h3 id="4-3-定量评价结果"><a href="#4-3-定量评价结果" class="headerlink" title="4.3 定量评价结果"></a>4.3 定量评价结果</h3><p>作者在MNIST与3D-Chair上进行了定量评估，结果如下：</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/3.jpg" style="zoom:80%;" /></p>
+<p>其baseline是完全无解耦效果的WGAN，使用部分参数共享方法的DMWGAN和InfoGAN，从数据上看本文方法确实有较好的解耦能力，但是根据其评测结果，WGAN的结果甚至普遍好于InfoGAN的结果，这个地方有点令人迷惑。。。</p>
+<h3 id="4-4-泛化能力评价"><a href="#4-4-泛化能力评价" class="headerlink" title="4.4 泛化能力评价"></a>4.4 泛化能力评价</h3><p>比较有意思的是本文的泛化能力评估部分，由于本文的思路在于挖掘数据中的一致性特征，获取等价类，因此当其他流形发生变化时，不会对模型性能产生影响，也就是说，只要准确挖掘到了共享的连续特征，在其法线方向可以挖掘到丰富的其他特征信息，而无视噪声或其他变化的影响，这是本文的一个理论优势和特点所在。</p>
+<p><img src="http://little_z_c.gitee.io/imagebed/Disentanglement%E7%9B%B8%E5%85%B3/DEEP%20QUOTIENT%20MANIFOLD%20MODELING%20%E9%98%85%E8%AF%BB%E7%AC%94%E8%AE%B0/9.jpg" style="zoom:80%;" /></p>
+<h2 id="5-总结"><a href="#5-总结" class="headerlink" title="5 总结"></a>5 总结</h2><p>本文的思路比较新颖，而且挖掘等价一致性的理论具有可行性，但是本文的loss没有对偏置的法线方向变量进行任何的约束，对于各个生成器之间也没有其他损失约束，这意味着每个生成器在除了等价流形维度上的维度是一致的之外，无法控制其他维度的变化，如何保证其解耦效果与数据真实特征一致？换句话说，怎么确定在等值线上的法线方向的流形就是我们需要的呢？另外，FID提升的原因是什么本文并未说明，rebuttal中审稿人提出FID方差变大的问题也值得考虑。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://example.com/2021/01/20/Focal%20Loss%20for%20Dense%20Object%20Detection/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1925,162 +2090,6 @@ A^d(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^d(\boldsymbol{X}^d
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://example.com/2020/12/24/Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="">
-      <meta itemprop="description" content="">
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="缓缓行舟">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2020/12/24/Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology/" itemprop="url">《Evaluating  the Disentanglement of Deep Generative Models through Manifold Topology》阅读笔记</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2020-12-24T18:06:57+08:00">
-                2020-12-24
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <h2 id="1-动机"><a href="#1-动机" class="headerlink" title="1 动机"></a>1 动机</h2><p>解耦工作对于模型的泛化、鲁棒性和可解释性来说至关重要，然而由于现有的解耦评测方法通常依赖于训练额外的、新的生成模型（分类器、编码器、回归器等）或在特定数据集以及使用特定方法预处理过的数据集上进行验证，因此评价结果的可靠性较差，且往往与任务较为相关，适用范围有限，也导致了用不同指标评测解耦模型时会出现多种排名结果。</p>
-<h2 id="2-方法"><a href="#2-方法" class="headerlink" title="2 方法"></a>2 方法</h2><p>本文所提出的评价方法基于拓扑学原理，理论上较为抽象，在实现上，测量每个潜在维度（$z_i$）上的条件子流形的持续同调（TDA, <a target="_blank" rel="noopener" href="https://zhuanlan.zhihu.com/p/31734839），然后，本文的评价核心思想即在于，**以解耦因子为条件的潜在子流形之间具有比以纠缠因子为条件的潜在子流形之间具有更高的拓扑相似度**。因此，采用W.RLT距离去度量这个拓扑相似性。">https://zhuanlan.zhihu.com/p/31734839），然后，本文的评价核心思想即在于，**以解耦因子为条件的潜在子流形之间具有比以纠缠因子为条件的潜在子流形之间具有更高的拓扑相似度**。因此，采用W.RLT距离去度量这个拓扑相似性。</a></p>
-<p>本文所采用的从数据样本空间估计拓扑空间同调的方法是相对存在时间（Relative Living Times，RLTs），为了获取RLTs，如下图所示，首先假定训练好的生成模型分布$p_{model}(x)$由一个带孔的流形$M_{model}$支撑，从$p_{model}(x)$中采样出样本点集合$X$，从而得到一个基础的单纯形复合物，改变每个样本点的阈值（即图(d)中每个点的半径）用欧氏距离度量点与点之间的临近测度，在逐渐增大阈值时，会产生不同数量的k维孔（拓扑学中度量同调的重要依据），最终实现对持久性同调的逼近，得到持久性条形码（连续同调评价的产物）。</p>
-<p>RLTs则是在改变阈值以生成的多个持久性条形码的矢量化，反映了每个k维孔出现和小时的持续时间内的离散分布，对RLTs取均值，则可以得到这些k维孔的平均相对生成时间，为一个离散概率分布，<strong>测量两个数据样本集之间的平均相对生成时间分布的相似性，就可以作为两个样本集之间拓扑相似性的评价依据</strong>。</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.1.jpg" alt=""></p>
-<p>为了说明其理论的有效性，作者可视化了解耦和非解耦的生成模型在dsprites数据集上的拓扑结构：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.2.jpg" alt=""></p>
-<p>可以发现，解耦模型在尺寸和转角两个因子下的子流形明显不同胚，转角子流形有一维孔，旋转则没有，而每个因子内部的各个子流形是同胚的，而不解耦模型则没有这个性质。</p>
-<p>传统的基于RLTs的拓扑相似性度量使用欧氏距离，但是经验上发现使用Wasserstein距离能显著改善度量精度。因此，作者基于W重心提出<strong>W.RLTs度量方法</strong>：</p>
-<h3 id="度量思想："><a href="#度量思想：" class="headerlink" title="度量思想："></a>度量思想：</h3><p>前面已经提到，采样后得到的RLTs代表k维空穴存在与否的离散分布，首先求出这个离散分布的重心<img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.3.jpg" style="zoom:80%;" />：分布重心定义为“使用W-2距离计算到达分布中所有点的最小总距离所在的位置”，计算公式如下：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.4.jpg" alt=""></p>
-<p>上面的$λ$是一个权重参数，其和为1。</p>
-<p>在求出RLTs的重心之后，从两个角度评价其解耦性能的好坏：</p>
-<p>1、 同一个因子内部的条件子流形应该有较高的拓扑相似性；</p>
-<p>2、 不同因子的条件子流形具有较低的拓扑相似性。</p>
-<p>因此，在某一因子$s_i$为条件下生成的条件子流形下，控制因子$s_i$的值不变，而其他因子的值可以变化，得到一个同一因子下的集群，测量这一集群内的拓扑相似性作为这一因子下的条件子流形的拓扑相似性结果；同时，测量不同因子作为条件的子流形之间的拓扑相似性，作为因子间拓扑相似性结果。作者在CelabA数据集上可视化了W.RLTs结果来说明这一思想，下图中的第一行是同一个因子内部的连续同调W.RLTs，下一行是不同因子之间的W.RLTs：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.5.jpg" alt=""></p>
-<h4 id="无监督评价方法"><a href="#无监督评价方法" class="headerlink" title="无监督评价方法"></a>无监督评价方法</h4><p>在评价时，由于实际的因子$s_i$与实验设置的因子$z_j$之间可能并不存咋一一对应的连结，因此，本文使用W距离计算每个因子$z_j$为条件的子流形的拓扑相似性，也就是使用W距离计算不同条件子流形之间的分布重心的距离，得到一个$j<em>j$维的拓扑相似性矩阵$M$，在得到拓扑相似性矩阵之后，使用奇异值分解进行频谱共聚类，其目的在于合并同态的以设置因子$z$为条件的子流形，使得$z$可以与实际因子$s$相对应，即合并解耦作用相似的因子，降维。由此得到最终的$c</em>c$维的共聚类相似性矩阵$M_c$。作者可视化了不同模型在不同数据集下的共聚类相似性矩阵（颜色越深，代表相似性越强，对角线即上即为同一条件子流形的同态相似性可视化结果）：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.6.jpg" alt=""></p>
-<p>之后，最小化共聚类相似性矩阵$M_c$的聚类内方差和聚类间方差，去求得最终的聚类数量c，使用共聚类相似性矩阵$M_c$，计算解耦得分$μ$。解耦得分定义为聚类内相似性和聚类间相似性之差：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.7.jpg" alt=""></p>
-<p>因此，一个解耦效果较好的模型，想要获得较高的解耦得分，则希望有尽量大的聚类内相似性，同时聚类间的相似性尽量小，类间相似性非常直观，就是$M_c$对角元上的值，因此：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.8.jpg" alt=""></p>
-<p>同样的，类间相似性就是$M_c$剔除对角元元素之外的值：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.9.jpg" alt=""></p>
-<p>这就是无监督方法的聚类解耦评估方法。</p>
-<h4 id="有监督评价方法"><a href="#有监督评价方法" class="headerlink" title="有监督评价方法"></a>有监督评价方法</h4><p>与上面的无监督方法相比，有监督方法的改动在于不再比较不同给定因子$z_j$，之间的拓扑相似性，而是对于有标签的数据集，同时计算实际因子$s_i$的W.RLTs，因此，在评价时，只计算$z_j$与$s_i$之间的拓扑相似性，得到$j*i$维的矩阵$M$，同样进行奇异值分解（具体怎么做没有再说明），因此类间相似性和类内相似性的计算如下：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.10.jpg" alt=""></p>
-<p>与无监督指标不同的地方在于，有监督指标对计算结果进行了归一化处理：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.11.jpg" alt=""></p>
-<h4 id="方法的限制"><a href="#方法的限制" class="headerlink" title="方法的限制"></a>方法的限制</h4><p>本评价方法假定数据流形是不完全对称的，因此没有考虑对称流形的情况，同时，RLTs不能计算数据流形的完整拓扑，而是进行逼近。</p>
-<h2 id="3-实验"><a href="#3-实验" class="headerlink" title="3 实验"></a>3 实验</h2><p>作者将本文提出的方法与MIG，一个使用一个分类器的方法Disentanglement和一个专门对人脸数据库解耦表现做评估的PPL方法进行比较，对不同解耦模型做排名，得到与其他指标相似的排名结果：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.12.jpg" alt=""></p>
-<p>大部分指标排名都比较相似，然而对于β-VAE，本文方法的指标与MIG相比差异较大，但是两种指标评价β-VAE时都有较大的方差，因此说明β-VAE的表现可能不是很稳定。同时还发现了两种训练目标比较相似的模型可能在解耦表现上有较大差异（Factor VAE和β-VAE）。</p>
-<p>同时报告了定量结果：</p>
-<p><img src="http://little_z_c.gitee.io/imagebed/《Evaluating%20%20the%20Disentanglement%20of%20Deep%20Generative%20Models%20through%20Manifold%20Topology》阅读笔记/5.13.jpg" alt=""></p>
-<p>作者指出，大部分情况下，无监督评估指标更为适用，尤其对于CelebA，由于脸部信息过多，不易于用有监督方法进行评价，而如果想评估特定的解耦（发色，眼镜），用有监督的方法会更合适。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -2131,7 +2140,7 @@ A^d(\boldsymbol{\boldsymbol{X}^r,\boldsymbol{X}^d})=softmax(f^d(\boldsymbol{X}^d
               
                 <a href="/archives/%20%7C%7C%20archive">
               
-                  <span class="site-state-item-count">13</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
